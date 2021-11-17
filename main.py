@@ -206,6 +206,16 @@ class Graph:
             print("Red:   " + str(self.red_succ))
         print("Selfloop: " + str(self.has_selfloop()))
 
+nodes = [0, 1, 2]
+green = [(0,0), (0,1), (0,2), (1,2), (2,1)]
+red = [(0,1), (0,2), (1,1), (2,0)]
+diverging_dreier = Graph.from_edge_lists(nodes, red, green)
+
+nodes = [0, 1, 2, 3]
+green = [(0, 1), (0, 2), (1, 2), (1, 3), (2, 0), (3, 0), (3, 2), (3, 3)]
+red =  [(0, 0), (0, 1), (1, 3), (2, 0), (3, 1)]
+constant_size = Graph.from_edge_lists(nodes, red, green)
+
 nodes = ["a", "b", "c", "d"]
 green = [("a", "a"), ("a", "b"), ("b", "c"), ("b", "d"), ("c", "a"), ("d", "c")]
 red = [("b", "b"), ("b", "c"), ("c", "a"), ("c", "c"), ("c", "d")]
@@ -218,7 +228,7 @@ slow_square = Graph.from_edge_lists(nodes, red, green)
 
 randy = Graph.random_graph(4)
 
-graph = slow_square
+graph = randy
 graph.log(nodes_and_edges=True)
 if graph.has_green_selfloop() and graph.has_red_selfloop():
     for i in range(7):
