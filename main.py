@@ -35,6 +35,39 @@ class Graph:
                     graph.add_red_edge(u, v)
         return graph
 
+    @classmethod
+    def from_code(cls, number_of_nodes, code):
+        graph = cls()
+        for i in range(number_of_nodes):
+            graph.add_node(i)
+        for i in range(number_of_nodes):
+            for j in range(number_of_nodes):
+                if code % 2 == 1:
+                    graph.add_green_edge(i, j)
+                code = code // 2
+        for i in range(number_of_nodes):
+            for j in range(number_of_nodes):
+                if code % 2 == 1:
+                    graph.add_red_edge(i, j)
+                code = code // 2
+        return graph
+
+    def to_code(self):
+        number_of_nodes = len(self.nodes)
+        code = 0
+        current_bit = 1
+        for i in range(number_of_nodes):
+            for j in range(number_of_nodes):
+                if self.has_green_edge(self.nodes[i], self.nodes[j]):
+                    code += current_bit
+                current_bit *= 2
+        for i in range(number_of_nodes):
+            for j in range(number_of_nodes):
+                if self.has_red_edge(self.nodes[i], self.nodes[j]):
+                    code += current_bit
+                current_bit *= 2
+        return number_of_nodes, code
+
     # Returns a new graph that is isomorphic to the old one, but names of nodes are integers
     def normalize_names(self):
         number_of_nodes = len(self.nodes)
@@ -228,14 +261,14 @@ slow_square = Graph.from_edge_lists(nodes, red, green)
 
 randy = Graph.random_graph(4)
 
-graph = randy
+graph = Graph.from_code(3, 44199)
 graph.log(nodes_and_edges=True)
 if graph.has_green_selfloop() and graph.has_red_selfloop():
     for i in range(7):
         if graph.has_selfloop():
             break
         graph = graph.L()
-        graph = graph.normalize_names()
+        #graph = graph.normalize_names()
         gc.collect()
         graph.remove_useless_nodes()
-        graph.log()
+        graph.log(nodes_and_edges=True)
