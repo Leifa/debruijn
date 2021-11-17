@@ -1,3 +1,4 @@
+import gc
 from random import randint
 
 
@@ -33,6 +34,23 @@ class Graph:
                 if randint(0, 1):
                     graph.add_red_edge(u, v)
         return graph
+
+    # Returns a new graph that is isomorphic to the old one, but names of nodes are integers
+    def normalize_names(self):
+        number_of_nodes = len(self.nodes)
+        new_nodes = list(range(number_of_nodes))
+        new_red_edges = []
+        new_green_edges = []
+        renaming = {}
+        for i in range(number_of_nodes):
+            renaming[self.nodes[i]] = i
+        for node in self.red_succ:
+            for node2 in self.red_succ[node]:
+                new_red_edges.append((renaming[node], renaming[node2]))
+        for node in self.green_succ:
+            for node2 in self.green_succ[node]:
+                new_green_edges.append((renaming[node], renaming[node2]))
+        return self.from_edge_lists(new_nodes, new_red_edges, new_green_edges)
 
     def add_node(self, node):
         self.nodes.append(node)
@@ -152,10 +170,7 @@ class Graph:
                 # filter out nodes that will not have a green and a red predecessor in L(P)
                 if self.common_green_pred(self.nodes[i], self.nodes[j]) and self.common_red_pred(self.nodes[i], self.nodes[j]):
                     prod.add_node((self.nodes[i], self.nodes[j]))
-        count = 0
         for (u1, u2) in prod.nodes:
-            print(count)
-            count += 1
             for (v1, v2) in prod.nodes:
                 if (self.has_red_edge(u1, v1) and self.has_red_edge(u1, v2)) or \
                         (self.has_red_edge(u2, v1) and self.has_red_edge(u2, v2)):
@@ -210,5 +225,7 @@ if graph.has_green_selfloop() and graph.has_red_selfloop():
         if graph.has_selfloop():
             break
         graph = graph.L()
+        graph = graph.normalize_names()
+        gc.collect()
         graph.remove_useless_nodes()
         graph.log()
