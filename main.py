@@ -53,11 +53,15 @@ class Graph:
                     red_successor = True
                 if node == y:
                     red_predecessor = True
+                if red_successor and red_predecessor:
+                    break
             for (x, y) in self.green:
                 if node == x:
                     green_successor = True
                 if node == y:
                     green_predecessor = True
+                if green_predecessor and green_successor:
+                    break
             if not red_predecessor or not green_predecessor:
                 useless_nodes.add(node)
                 print("Node " + str(node) + " does not have both colored predecessors and will be removed.")
