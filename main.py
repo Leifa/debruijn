@@ -137,12 +137,25 @@ class Graph:
                 change_was_made = True
                 self.remove_node(node)
 
+    # returns True if node1 and node2 have a common red predecessor
+    def common_red_pred(self, node1, node2):
+        return len(self.red_pred[node1].intersection(self.red_pred[node2])) > 0
+
+    # returns True if node1 and node2 have a common green predecessor
+    def common_green_pred(self, node1, node2):
+        return len(self.green_pred[node1].intersection(self.green_pred[node2])) > 0
+
     def L(self):
         prod = Graph()
         for i in range(len(self.nodes)):
             for j in range(i, len(self.nodes)):
-                prod.add_node((self.nodes[i], self.nodes[j]))
+                # filter out nodes that will not have a green and a red predecessor in L(P)
+                if self.common_green_pred(self.nodes[i], self.nodes[j]) and self.common_red_pred(self.nodes[i], self.nodes[j]):
+                    prod.add_node((self.nodes[i], self.nodes[j]))
+        count = 0
         for (u1, u2) in prod.nodes:
+            print(count)
+            count += 1
             for (v1, v2) in prod.nodes:
                 if (self.has_red_edge(u1, v1) and self.has_red_edge(u1, v2)) or \
                         (self.has_red_edge(u2, v1) and self.has_red_edge(u2, v2)):
