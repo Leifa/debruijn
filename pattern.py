@@ -78,6 +78,90 @@ class Pattern:
             if node not in green:
                 self.remove_all_green_successors(node)
 
+    # Returns the set of all nodes that are reachable from the given node via a directed path of red edges.
+    def get_reachable_nodes_via_red(self, start):
+        red = set()
+        red.add(start)
+        change = True
+        while (change):
+            change = False
+            num_red = len(red)
+            for node in red:
+                red = red.union(self.red_succ[node])
+            if len(red) > num_red:
+                change = True
+        return red
+
+    # Returns the set of all nodes that are reachable from the given node via a directed path of red edges.
+    def get_reachable_nodes_via_green(self, start):
+        green = set()
+        green.add(start)
+        change = True
+        while (change):
+            change = False
+            num_green = len(green)
+            for node in green:
+                green = green.union(self.green_succ[node])
+            if len(green) > num_green:
+                change = True
+        return green
+
+    # Returns the set of all nodes that have a red successor.
+    def get_nodes_with_a_red_successor(self):
+        result = set()
+        for node in self.nodes:
+            if len(self.red_succ[node]) > 0:
+                result.add(node)
+        return result
+
+    # Returns the set of all nodes that have a green successor.
+    def get_nodes_with_a_green_successor(self):
+        result = set()
+        for node in self.nodes:
+            if len(self.green_succ[node]) > 0:
+                result.add(node)
+        return result
+
+    # Returns the set of all nodes that have a red selfloop.
+    def get_nodes_with_a_red_selfloop(self):
+        red_selfloops = set()
+        for node in self.nodes:
+            if node in self.red_succ[node]:
+                red_selfloops.add(node)
+        return red_selfloops
+
+    # Returns the set of all nodes that have a red selfloop.
+    def get_nodes_with_a_green_selfloop(self):
+        green_selfloops = set()
+        for node in self.nodes:
+            if node in self.green_succ[node]:
+                green_selfloops.add(node)
+        return green_selfloops
+
+    # Checks whether there is a node v with a red selfloop such that every node with a red successor is reachable
+    # from v via a directed path of red edges. If this is not the case, then the pattern can be ignored,
+    # because there is an equivalent subset of the pattern.
+    def check_red_connected(self):
+        red_selfloops = self.get_nodes_with_a_red_selfloop()
+        nodes_with_red_successor = self.get_nodes_with_a_red_successor()
+        for node in red_selfloops:
+            reachable = self.get_reachable_nodes_via_red(node)
+            if nodes_with_red_successor.issubset(reachable):
+                return True
+        return False
+
+    # Checks whether there is a node v with a green selfloop such that every node with a green successor is reachable
+    # from v via a directed path of green edges. If this is not the case, then the pattern can be ignored,
+    # because there is an equivalent subset of the pattern.
+    def check_green_connected(self):
+        green_selfloops = self.get_nodes_with_a_green_selfloop()
+        nodes_with_green_successor = self.get_nodes_with_a_green_successor()
+        for node in green_selfloops:
+            reachable = self.get_reachable_nodes_via_green(node)
+            if nodes_with_green_successor.issubset(reachable):
+                return True
+        return False
+
     # removes all red successors of the given node
     def remove_all_red_successors(self, node):
         to_remove = set(self.red_succ[node])
@@ -89,6 +173,35 @@ class Pattern:
         to_remove = set(self.green_succ[node])
         for node2 in to_remove:
             self.remove_green_edge(node, node2)
+
+    # Returns whether there are nodes without successor, without green predecessor, without red predecessor,
+    # or dominated by another node.
+    def has_useless_nodes(self):
+        # Is there a node with missing successors or predecessors?
+        for node in self.nodes:
+            red_successor = len(self.red_succ[node]) > 0
+            red_predecessor = len(self.red_pred[node]) > 0
+            green_successor = len(self.green_succ[node]) > 0
+            green_predecessor = len(self.green_pred[node]) > 0
+            if not red_predecessor or not green_predecessor:
+                return True
+            if not red_successor and not green_successor:
+                return True
+
+        # Is there a node dominated by other node?
+        for a in self.nodes:
+            for b in self.nodes:
+                if a != b:
+                    if self.red_pred[a].issubset(self.red_pred[b]) and \
+                            self.red_succ[a].issubset(self.red_succ[b]) and \
+                            self.green_pred[a].issubset(self.green_pred[b]) and \
+                            self.green_succ[a].issubset(self.green_succ[b]):
+                        return True
+                    if self.red_pred[b].issubset(self.red_pred[a]) and self.red_succ[b].issubset(self.red_succ[a]) and \
+                            self.green_pred[b].issubset(self.green_pred[a]) and self.green_succ[b].issubset(
+                            self.green_succ[a]):
+                        return True
+        return False
 
     def to_code(self):
         number_of_nodes = len(self.nodes)
