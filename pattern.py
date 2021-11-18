@@ -50,6 +50,46 @@ class Pattern:
                 code = code // 2
         return pattern
 
+    def remove_useless_edges(self):
+        # determine all nodes reachable from a selfloop
+        red = set() # nodes reachable from a red selfloop via red edges
+        green = set() # nodes reachable from a green selfloop via green edges
+        for node in self.nodes:
+            if node in self.red_succ[node]:
+                red.add(node)
+            if node in self.green_succ[node]:
+                green.add(node)
+        change = True
+        while(change):
+            change = False
+            num_red = len(red)
+            num_green = len(green)
+            for node in red:
+                red = red.union(self.red_succ[node])
+            for node in green:
+                green = green.union(self.green_succ[node])
+            if len(red) > num_red or len(green) > num_green:
+                change = True
+
+        # if a node has an outgoing edge of color x, but is not reachable by a selfloop of color x, remove the edge
+        for node in self.nodes:
+            if node not in red:
+                self.remove_all_red_successors(node)
+            if node not in green:
+                self.remove_all_green_successors(node)
+
+    # removes all red successors of the given node
+    def remove_all_red_successors(self, node):
+        to_remove = set(self.red_succ[node])
+        for node2 in to_remove:
+            self.remove_red_edge(node, node2)
+
+    # removes all green successors of the given node
+    def remove_all_green_successors(self, node):
+        to_remove = set(self.green_succ[node])
+        for node2 in to_remove:
+            self.remove_green_edge(node, node2)
+
     def to_code(self):
         number_of_nodes = len(self.nodes)
         code = 0
@@ -98,11 +138,34 @@ class Pattern:
         self.green_succ[node1].add(node2)
         self.green_pred[node2].add(node1)
 
+    def remove_red_edge(self, node1, node2):
+        self.red_succ[node1].remove(node2)
+        self.red_pred[node2].remove(node1)
+
+    def remove_green_edge(self, node1, node2):
+        self.green_succ[node1].remove(node2)
+        self.green_pred[node2].remove(node1)
+
     def has_red_edge(self, node1, node2):
         return node2 in self.red_succ[node1]
 
     def has_green_edge(self, node1, node2):
         return node2 in self.green_succ[node1]
+
+    def get_number_of_nodes(self):
+        return len(self.nodes)
+
+    def get_number_of_red_edges(self):
+        result = 0
+        for node in self.red_succ:
+            result += len(self.red_succ[node])
+        return result
+
+    def get_number_of_green_edges(self):
+        result = 0
+        for node in self.green_succ:
+            result += len(self.green_succ[node])
+        return result
 
     def remove_node(self, node):
         self.nodes.remove(node)
