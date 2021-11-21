@@ -1,4 +1,5 @@
 import gc
+from multiprocessing import Process
 
 from termcolor import colored
 
@@ -53,31 +54,35 @@ def check_pattern(number_of_nodes, code):
         #pattern.log(True)
     return 5
 
-results = [0, 0, 0, 0, 0, 0, 0]
 
-for code in range(2**23,2**24):
-    result = check_pattern(4, code)
-    results[result] += 1
-    if result == 5:
-        f = open("unsolved.txt", "a")
-        f.write(f"4,{code}\n")
-        f.close()
-    if code % 1000 == 0:
-        print(code)
-        print(results)
+def check_pattern_range(start, finish):
+    results = [0, 0, 0, 0, 0, 0, 0]
+    for code in range(start, finish):
+        result = check_pattern(4, code)
+        results[result] += 1
+        if result == 5:
+            f = open(f"unsolved.txt", "a")
+            f.write(f"4,{code}\n")
+            f.close()
+        if code % 1000 == 0:
+            print(code)
+            print(results)
 
-    # if result == 0:
-    #     print(str(code) + ": " + colored("Trivial No Homo", "green"))
-    # if result == 1:
-    #     print(str(code) + ": " + colored("Trivial Homo", "green"))
-    # if result == 2:
-    #     print(str(code) + ": " + colored("Ignore", "yellow"))
-    # if result == 3:
-    #     print(str(code) + ": " + colored("Non Trivial Homo", "yellow"))
-    # if result == 4:
-    #     print(str(code) + ": " + colored("Non Trivial No Homo", "yellow"))
-    # if result == 5:
-    #     print(str(code) + ": " + colored("UNKNOWN", "red"))
-    # if result == 6:
-    #     print(str(code) + ": " + colored("No Normal Form", "yellow"))
-print(results)
+        # if result == 0:
+        #     print(str(code) + ": " + colored("Trivial No Homo", "green"))
+        # if result == 1:
+        #     print(str(code) + ": " + colored("Trivial Homo", "green"))
+        # if result == 2:
+        #     print(str(code) + ": " + colored("Ignore", "yellow"))
+        # if result == 3:
+        #     print(str(code) + ": " + colored("Non Trivial Homo", "yellow"))
+        # if result == 4:
+        #     print(str(code) + ": " + colored("Non Trivial No Homo", "yellow"))
+        # if result == 5:
+        #     print(str(code) + ": " + colored("UNKNOWN", "red"))
+        # if result == 6:
+        #     print(str(code) + ": " + colored("No Normal Form", "yellow"))
+    print(results)
+
+
+check_pattern_range(2**25, 2**26)
