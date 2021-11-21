@@ -55,13 +55,13 @@ def check_pattern(number_of_nodes, code):
     return 5
 
 
-def check_pattern_range(start, finish):
+def check_pattern_range(start, finish, filename):
     results = [0, 0, 0, 0, 0, 0, 0]
     for code in range(start, finish):
         result = check_pattern(4, code)
         results[result] += 1
         if result == 5:
-            f = open(f"unsolved.txt", "a")
+            f = open(filename, "a")
             f.write(f"4,{code}\n")
             f.close()
         if code % 1000 == 0:
@@ -84,5 +84,14 @@ def check_pattern_range(start, finish):
         #     print(str(code) + ": " + colored("No Normal Form", "yellow"))
     print(results)
 
+def check_pattern_range_multicore(start, finish, cores):
+    size = (finish-start) // cores
+    processes = []
+    for i in range(cores):
+        p = Process(target=check_pattern_range, args=(start+size*i, start+size*(i+1), f"unsolved{i}.txt"))
+        p.start()
+        processes.append(p)
+    for p in processes:
+        p.join()
 
-check_pattern_range(2**25, 2**26)
+check_pattern_range_multicore(2**26, 2**27, 8)
