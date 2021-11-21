@@ -130,7 +130,7 @@ class Pattern:
                 red_selfloops.add(node)
         return red_selfloops
 
-    # Returns the set of all nodes that have a red selfloop.
+    # Returns the set of all nodes that have a green selfloop.
     def get_nodes_with_a_green_selfloop(self):
         green_selfloops = set()
         for node in self.nodes:
@@ -149,6 +149,34 @@ class Pattern:
             if nodes_with_red_successor.issubset(reachable):
                 return True
         return False
+
+    # Checks whether the code describes a pattern in normal form.
+    # Normal form means, that there are at least as many green
+    # edges as red edges, and that the nodes are ordered ascending by the number of green successors,
+    # and, if two nodes have the same number of green successors, by the number of red successors.
+    # If a pattern is not in normal form, then it can be ignored, because one can produce an equivalent
+    # pattern by reordering nodes and exchanging red and green.
+    @classmethod
+    def check_code_normal_form(self, number_of_nodes, code):
+        number_of_edges = bin(code).count("1")
+        number_of_red_edges = bin(code >> (number_of_nodes*number_of_nodes)).count("1")
+        number_of_green_edges = number_of_edges - number_of_red_edges
+        if number_of_red_edges > number_of_green_edges:
+            return False
+        number_of_green_successors = []
+        for i in range(number_of_nodes):
+            number_of_green_successors.append(bin(code % (2**number_of_nodes)).count("1"))
+            code //= (2**number_of_nodes)
+        number_of_red_successors = []
+        for i in range(number_of_nodes):
+            number_of_red_successors.append(bin(code % (2**number_of_nodes)).count("1"))
+            code //= (2**number_of_nodes)
+        for i in range(number_of_nodes-1):
+            if number_of_green_successors[i] < number_of_green_successors[i+1]:
+                return False
+            if number_of_green_successors[i] == number_of_green_successors[i+1] and number_of_red_successors[i] < number_of_red_successors[i+1]:
+                return False
+        return True
 
     # Checks whether there is a node v with a green selfloop such that every node with a green successor is reachable
     # from v via a directed path of green edges. If this is not the case, then the pattern can be ignored,

@@ -11,7 +11,11 @@ slow_square = Pattern.from_code(4, 3569496551)
 disconnected_red = Pattern.from_code(4, 2954840)
 long_four = Pattern.from_code(4, 3937948)
 
-def check_pattern(pattern):
+def check_pattern(number_of_nodes, code):
+
+    if not Pattern.check_code_normal_form(number_of_nodes, code):
+        return 6
+    pattern = Pattern.from_code(number_of_nodes, code)
 
     # some preprocessing
     if pattern.has_selfloop():
@@ -30,12 +34,14 @@ def check_pattern(pattern):
         return 0
 
     # iterate L
-    for i in range(6):
+    for i in range(9):
         if pattern.has_selfloop():
             return 3
         num_nodes = pattern.get_number_of_nodes()
         num_red_edges = pattern.get_number_of_red_edges()
         num_green_edges = pattern.get_number_of_green_edges()
+        if num_nodes > 40:
+            return 5
         pattern = pattern.L()
         pattern = pattern.normalize_names()
         gc.collect()  # call garbage collector to free memory
@@ -44,21 +50,19 @@ def check_pattern(pattern):
                 num_red_edges == pattern.get_number_of_red_edges() and \
                 num_green_edges == pattern.get_number_of_green_edges():
             return 4
-        pattern.log(True)
+        #pattern.log(True)
     return 5
 
-long_four.log(True)
-check_pattern(long_four)
-quit()
+results = [0, 0, 0, 0, 0, 0, 0]
 
-results = [0, 0, 0, 0, 0, 0]
-
-for code in range(3937900, 3938000):
-    pattern = Pattern.from_code(4, code)
-    #pattern.log(True)
-    result = check_pattern(pattern)
+for code in range(2**23,2**24):
+    result = check_pattern(4, code)
     results[result] += 1
-    if code % 1 == 0:
+    if result == 5:
+        f = open("unsolved.txt", "a")
+        f.write(f"4,{code}\n")
+        f.close()
+    if code % 1000 == 0:
         print(code)
         print(results)
 
@@ -74,3 +78,6 @@ for code in range(3937900, 3938000):
     #     print(str(code) + ": " + colored("Non Trivial No Homo", "yellow"))
     # if result == 5:
     #     print(str(code) + ": " + colored("UNKNOWN", "red"))
+    # if result == 6:
+    #     print(str(code) + ": " + colored("No Normal Form", "yellow"))
+print(results)
