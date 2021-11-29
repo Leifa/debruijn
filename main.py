@@ -1,5 +1,6 @@
 import gc
 from multiprocessing import Process
+from time import time
 
 from termcolor import colored
 
@@ -65,7 +66,8 @@ def check_pattern_range(start, finish, filename):
             f.write(f"4,{code}\n")
             f.close()
         if code % 1000 == 0:
-            print(code)
+            percent = (code - start) / (finish - start) * 100
+            print(str(percent) + "%")
             print(results)
 
         # if result == 0:
@@ -84,14 +86,23 @@ def check_pattern_range(start, finish, filename):
         #     print(str(code) + ": " + colored("No Normal Form", "yellow"))
     print(results)
 
-def check_pattern_range_multicore(start, finish, cores):
+def check_pattern_range_multicore(start, finish, cores, filename):
     size = (finish-start) // cores
     processes = []
     for i in range(cores):
-        p = Process(target=check_pattern_range, args=(start+size*i, start+size*(i+1), f"unsolved{i}.txt"))
+        p = Process(target=check_pattern_range, args=(start+size*i, start+size*(i+1), f"{filename}-{i}.txt"))
         p.start()
         processes.append(p)
     for p in processes:
         p.join()
 
-check_pattern_range_multicore(2**26, 2**27, 8)
+
+start_time = time()
+
+check_pattern_range_multicore(2**28 + 0*2**26, 2**28 + 1*2**26, 8, "u1")
+check_pattern_range_multicore(2**28 + 1*2**26, 2**28 + 2*2**26, 8, "u2")
+check_pattern_range_multicore(2**28 + 2*2**26, 2**28 + 3*2**26, 8, "u3")
+check_pattern_range_multicore(2**28 + 3*2**26, 2**28 + 4*2**26, 8, "u4")
+
+end_time = time()
+print(f"Finished in {end_time - start_time} seconds")
