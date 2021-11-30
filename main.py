@@ -99,10 +99,14 @@ def check_pattern_range_multicore(start, finish, cores, filename):
 
 start_time = time()
 
-check_pattern_range_multicore(2**28 + 0*2**26, 2**28 + 1*2**26, 8, "u1")
-check_pattern_range_multicore(2**28 + 1*2**26, 2**28 + 2*2**26, 8, "u2")
-check_pattern_range_multicore(2**28 + 2*2**26, 2**28 + 3*2**26, 8, "u3")
-check_pattern_range_multicore(2**28 + 3*2**26, 2**28 + 4*2**26, 8, "u4")
+check_pattern_range_multicore(2**29 + 0*2**26, 2**29 + 1*2**26, 8, "u1")
+check_pattern_range_multicore(2**29 + 1*2**26, 2**29 + 2*2**26, 8, "u2")
+check_pattern_range_multicore(2**29 + 2*2**26, 2**29 + 3*2**26, 8, "u3")
+check_pattern_range_multicore(2**29 + 3*2**26, 2**29 + 4*2**26, 8, "u4")
+check_pattern_range_multicore(2**29 + 4*2**26, 2**29 + 5*2**26, 8, "u5")
+check_pattern_range_multicore(2**29 + 5*2**26, 2**29 + 6*2**26, 8, "u6")
+check_pattern_range_multicore(2**29 + 6*2**26, 2**29 + 7*2**26, 8, "u7")
+check_pattern_range_multicore(2**29 + 7*2**26, 2**29 + 8*2**26, 8, "u8")
 
 end_time = time()
 print(f"Finished in {end_time - start_time} seconds")
