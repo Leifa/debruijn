@@ -99,14 +99,30 @@ def check_pattern_range_multicore(start, finish, cores, filename):
 
 start_time = time()
 
-check_pattern_range_multicore(2**29 + 0*2**26, 2**29 + 1*2**26, 8, "u1")
-check_pattern_range_multicore(2**29 + 1*2**26, 2**29 + 2*2**26, 8, "u2")
-check_pattern_range_multicore(2**29 + 2*2**26, 2**29 + 3*2**26, 8, "u3")
-check_pattern_range_multicore(2**29 + 3*2**26, 2**29 + 4*2**26, 8, "u4")
-check_pattern_range_multicore(2**29 + 4*2**26, 2**29 + 5*2**26, 8, "u5")
-check_pattern_range_multicore(2**29 + 5*2**26, 2**29 + 6*2**26, 8, "u6")
-check_pattern_range_multicore(2**29 + 6*2**26, 2**29 + 7*2**26, 8, "u7")
-check_pattern_range_multicore(2**29 + 7*2**26, 2**29 + 8*2**26, 8, "u8")
+for i in range(16):
+    check_pattern_range_multicore(2 ** 30 + i * 2 ** 26, 2 ** 30 + (i+1) * 2 ** 26, 8, f"u{i}")
+
+f = open("unsolved2.txt", "a")
+for i in range(8):
+    for j in range(8):
+        try:
+            f2 = open(f"u{i}-{j}.txt", "r")
+            f.write(f2.read())
+            f2.close()
+        except OSError:
+            pass
+f.close()
+
+f = open("unsolved3.txt", "a")
+for i in range(8, 16):
+    for j in range(8):
+        try:
+            f2 = open(f"u{i}-{j}.txt", "r")
+            f.write(f2.read())
+            f2.close()
+        except OSError:
+            pass
+f.close()
 
 end_time = time()
 print(f"Finished in {end_time - start_time} seconds")
