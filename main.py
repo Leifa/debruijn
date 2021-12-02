@@ -4,6 +4,7 @@ import time
 
 from termcolor import colored
 
+from nfa import Nfa
 from pattern import Pattern
 
 diverging_dreier = Pattern.from_code(3, 44199)
@@ -125,10 +126,32 @@ def check_pattern_range_multicore(start, finish, batch_size, cores, filename):
             pass
     f.close()
 
+def filter_patterns_using_third_path_condition(input, output):
+    input_file = open(input, "r")
+    output_file = open(output, "a")
+    count = 0
+    total = 0
+    for line in input_file:
+        number_of_nodes, code = line.split(",")
+        nfa = Nfa.from_pattern_code(int(number_of_nodes), int(code))
+        if nfa.satisfies_path_condition():
+            count += 1
+            output_file.write(f"{number_of_nodes},{code}")
+        else:
+            pattern = Pattern.from_code(int(number_of_nodes), int(code))
+            pattern.log(True)
+        total += 1
+    input_file.close()
+    output_file.close()
+    print(f"Checked {total} patterns.")
+    print(f"{count} of them satisfied the third path condition, {total-count} did not.")
+
 
 start_time = time.time()
 
-check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
+filter_patterns_using_third_path_condition("unsolved.txt", "new.txt")
+
+#check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
 
 # f = open("unsolved2.txt", "a")
 # for i in range(8):
