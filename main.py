@@ -1,6 +1,6 @@
 import gc
 from multiprocessing import Process
-from time import time
+import time
 
 from termcolor import colored
 
@@ -65,10 +65,8 @@ def check_pattern_range(start, finish, filename):
             f = open(filename, "a")
             f.write(f"4,{code}\n")
             f.close()
-        if code % 1000 == 0:
-            percent = (code - start) / (finish - start) * 100
-            print(str(percent) + "%")
-            print(results)
+        # if code % 1000 == 0:
+        #     print(results)
 
         # if result == 0:
         #     print(str(code) + ": " + colored("Trivial No Homo", "green"))
@@ -84,45 +82,75 @@ def check_pattern_range(start, finish, filename):
         #     print(str(code) + ": " + colored("UNKNOWN", "red"))
         # if result == 6:
         #     print(str(code) + ": " + colored("No Normal Form", "yellow"))
-    print(results)
+    #print(results)
 
-def check_pattern_range_multicore(start, finish, cores, filename):
-    size = (finish-start) // cores
+def check_pattern_range_multicore(start, finish, batch_size, cores, filename):
+
+    # Calculate how many batches and initialize batch counter
+    batches = (finish - start) // batch_size
+    current_batch = 0
     processes = []
-    for i in range(cores):
-        p = Process(target=check_pattern_range, args=(start+size*i, start+size*(i+1), f"{filename}-{i}.txt"))
+
+    # Start the processes
+    while current_batch < cores:
+        p = Process(target=check_pattern_range, args=(start+batch_size*current_batch, start+batch_size*(current_batch+1), f"{current_batch}.txt"))
+        current_batch += 1
         p.start()
         processes.append(p)
+
+    # Check every second whether a process has finished. If this is the case, and if there are more batches,
+    # then start the process again with the next batch.
+    while current_batch < batches:
+        time.sleep(1)
+        for i in range(len(processes)):
+            if current_batch < batches and not processes[i].is_alive():
+                p = Process(target=check_pattern_range, args=(start+batch_size*current_batch, start+batch_size*(current_batch+1), f"{current_batch}.txt"))
+                current_batch += 1
+                p.start()
+                processes[i] = p
+                print(colored(f"{current_batch / batches * 100}%", "yellow"))
+
+    # Wait for all processes to finish
     for p in processes:
         p.join()
 
-
-start_time = time()
-
-for i in range(16):
-    check_pattern_range_multicore(2 ** 30 + i * 2 ** 26, 2 ** 30 + (i+1) * 2 ** 26, 8, f"u{i}")
-
-f = open("unsolved2.txt", "a")
-for i in range(8):
-    for j in range(8):
+    # Write all results into one file.
+    f = open(filename, "a")
+    for i in range(batches):
         try:
-            f2 = open(f"u{i}-{j}.txt", "r")
+            f2 = open(f"{i}.txt", "r")
             f.write(f2.read())
             f2.close()
         except OSError:
             pass
-f.close()
+    f.close()
 
-f = open("unsolved3.txt", "a")
-for i in range(8, 16):
-    for j in range(8):
-        try:
-            f2 = open(f"u{i}-{j}.txt", "r")
-            f.write(f2.read())
-            f2.close()
-        except OSError:
-            pass
-f.close()
 
-end_time = time()
+start_time = time.time()
+
+check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
+
+# f = open("unsolved2.txt", "a")
+# for i in range(8):
+#     for j in range(8):
+#         try:
+#             f2 = open(f"u{i}-{j}.txt", "r")
+#             f.write(f2.read())
+#             f2.close()
+#         except OSError:
+#             pass
+# f.close()
+#
+# f = open("unsolved3.txt", "a")
+# for i in range(8, 16):
+#     for j in range(8):
+#         try:
+#             f2 = open(f"u{i}-{j}.txt", "r")
+#             f.write(f2.read())
+#             f2.close()
+#         except OSError:
+#             pass
+# f.close()
+
+end_time = time.time()
 print(f"Finished in {end_time - start_time} seconds")
