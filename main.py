@@ -43,7 +43,7 @@ def check_pattern(number_of_nodes, code):
         num_nodes = pattern.get_number_of_nodes()
         num_red_edges = pattern.get_number_of_red_edges()
         num_green_edges = pattern.get_number_of_green_edges()
-        if num_nodes > 40:
+        if num_nodes > 100:
             return 5
         pattern = pattern.L()
         pattern = pattern.normalize_names()
@@ -54,6 +54,7 @@ def check_pattern(number_of_nodes, code):
                 num_green_edges == pattern.get_number_of_green_edges():
             return 4
         #pattern.log(True)
+        print(len(pattern.nodes))
     return 5
 
 
@@ -175,13 +176,36 @@ def filter_patterns_using_first_path_condition(input, output):
     print(f"Checked {total} patterns.")
     print(f"{count} of them satisfied the first path condition, {total-count} did not.")
 
+def check_patterns_from_file(input, output):
+    input_file = open(input, "r")
+    output_file = open(output, "a")
+    count = 0
+    total = 0
+    for line in input_file:
+        number_of_nodes, code = line.split(",")
+        result = check_pattern(int(number_of_nodes), int(code))
+        if result == 3:
+            print(colored(f"Code {code} SOLVED!!! Homo", "green"))
+        elif result == 4:
+            print(colored(f"Code {code} SOLVED!!! No Homo", "green"))
+        else:
+            count += 1
+            output_file.write(f"{number_of_nodes},{code}")
+        total += 1
+        print(f"Count: {total}")
+    input_file.close()
+    output_file.close()
+    print(f"Checked {total} patterns.")
+    print(f"{total-count} were solved now.")
 
 start_time = time.time()
 
 #filter_patterns_using_first_path_condition("unsolved.txt", "new2.txt")
 
-pattern = Pattern.from_code(4,3937948)
-pattern.log(True)
+check_patterns_from_file("unsolved.txt", "new3.txt")
+
+#pattern = Pattern.from_code(4,3937948)
+#pattern.log(True)
 
 #check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
 
