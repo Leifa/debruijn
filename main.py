@@ -146,10 +146,42 @@ def filter_patterns_using_third_path_condition(input, output):
     print(f"Checked {total} patterns.")
     print(f"{count} of them satisfied the third path condition, {total-count} did not.")
 
+def filter_patterns_using_first_path_condition(input, output):
+    input_file = open(input, "r")
+    output_file = open(output, "a")
+    count = 0
+    total = 0
+    for line in input_file:
+        number_of_nodes, code = line.split(",")
+        nfa = Nfa.from_pattern_code(int(number_of_nodes), int(code))
+        all = nfa.states
+        #print(nfa)
+        nfa = nfa.power_nfa(full=True)
+        nfa.clear_final_states()
+        nfa.clear_start_states()
+        for state in all:
+            nfa.add_start_state(frozenset({state}))
+        nfa.add_final_state(frozenset(all))
+        if nfa.is_language_cofinite():
+            count += 1
+            output_file.write(f"{number_of_nodes},{code}")
+        else:
+            pattern = Pattern.from_code(int(number_of_nodes), int(code))
+            #pattern.log(True)
+        total += 1
+        print(total)
+    input_file.close()
+    output_file.close()
+    print(f"Checked {total} patterns.")
+    print(f"{count} of them satisfied the first path condition, {total-count} did not.")
+
 
 start_time = time.time()
 
-filter_patterns_using_third_path_condition("unsolved.txt", "new.txt")
+#filter_patterns_using_first_path_condition("unsolved.txt", "new2.txt")
+
+pattern = Pattern.from_code(4,3937948)
+pattern.log(True)
 
 #check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
 
