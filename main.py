@@ -16,8 +16,8 @@ long_four = Pattern.from_code(4, 3937948)
 
 def check_pattern(number_of_nodes, code):
 
-    if not Pattern.check_code_normal_form(number_of_nodes, code):
-        return 6
+    #if not Pattern.check_code_normal_form(number_of_nodes, code):
+    #    return 6
     pattern = Pattern.from_code(number_of_nodes, code)
 
     # some preprocessing
@@ -202,10 +202,12 @@ start_time = time.time()
 
 #filter_patterns_using_first_path_condition("unsolved.txt", "new2.txt")
 
-check_patterns_from_file("unsolved.txt", "new3.txt")
+#check_patterns_from_file("unsolved.txt", "new3.txt")
 
-#pattern = Pattern.from_code(4,3937948)
+#pattern = Pattern.from_code(4,2063974806)
 #pattern.log(True)
+check_pattern(4,2063974806)
+
 
 #check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
 
