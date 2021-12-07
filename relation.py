@@ -26,6 +26,15 @@ class Relation:
                 code = code // 2
         return relation
 
+    # Returns the diagonal relation on the given number of nodes, also called the identity.
+    @classmethod
+    def diagonal(cls, number_of_nodes):
+        relation = cls()
+        for i in range(number_of_nodes):
+            relation.add_node(i)
+            relation.add_edge(i, i)
+        return relation
+
     def add_node(self, node):
         if node in self.nodes:
             return
@@ -153,6 +162,26 @@ class Relation:
             if self.has_edge(x, x):
                 return True
         return False
+
+    # Computes the composition of this relation with the given relation.
+    def compose(self, rel2):
+        if not set(self.nodes) == set(rel2.nodes):
+            raise ValueError("These relations are not defined on the same domain. Cannot compose them.")
+        composition = Relation()
+        for node in self.nodes:
+            composition.add_node(node)
+        for node in self.nodes:
+            for pred in self.pred[node]:
+                for succ in rel2.succ[node]:
+                    composition.add_edge(pred, succ)
+
+    def __eq__(self, other):
+        if set(self.nodes) != set(other.nodes):
+            return False
+        for node in self.nodes:
+            if self.succ[node] != other.succ[node]:
+                return False
+        return True
 
     def log(self, nodes_and_edges=False):
         print("Number of Nodes: " + str(len(self.nodes)))
