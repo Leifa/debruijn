@@ -209,13 +209,15 @@ start_time = time.time()
 #pattern.log(True)
 #check_pattern(4,2063974806)
 
-pattern = Pattern.from_code(4,2063974806)
-
-pattern.log(True)
-
-cg = caleygraph.compute_caley_graph(pattern)
-
-cg.log(True)
+max = 0
+for i in range(2**20):
+    if i % 10000 == 0:
+        print(i)
+    pattern = Pattern.from_code(4,i)
+    cg = caleygraph.compute_caley_graph(pattern)
+    if cg.get_number_of_nodes() > max:
+        max = cg.get_number_of_nodes()
+print(f"Max: {max}")
 
 #check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
 
