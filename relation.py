@@ -180,6 +180,7 @@ class Relation:
             for pred in self.pred[node]:
                 for succ in rel2.succ[node]:
                     composition.add_edge(pred, succ)
+        return composition
 
     def __eq__(self, other):
         if set(self.succ.keys()) != set(other.succ.keys()):

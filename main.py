@@ -6,6 +6,7 @@ from termcolor import colored
 
 from nfa import Nfa
 from pattern import Pattern
+import caleygraph
 
 diverging_dreier = Pattern.from_code(3, 44199)
 converging = Pattern.from_code(4, 562287046)
@@ -206,8 +207,15 @@ start_time = time.time()
 
 #pattern = Pattern.from_code(4,2063974806)
 #pattern.log(True)
-check_pattern(4,2063974806)
+#check_pattern(4,2063974806)
 
+pattern = Pattern.from_code(4,2063974806)
+
+pattern.log(True)
+
+cg = caleygraph.compute_caley_graph(pattern)
+
+cg.log(True)
 
 #check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
 
