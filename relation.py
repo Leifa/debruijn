@@ -1,7 +1,6 @@
 class Relation:
 
     def __init__(self):
-        self.nodes = []
         self.succ = {}
         self.pred = {}
 
@@ -36,14 +35,10 @@ class Relation:
         return relation
 
     def add_node(self, node):
-        if node in self.nodes:
-            return
-        self.nodes.append(node)
         self.succ[node] = set()
         self.pred[node] = set()
 
     def remove_node(self, node):
-        self.nodes.remove(node)
         del self.succ[node]
         del self.pred[node]
         for a in self.succ:
@@ -64,12 +59,9 @@ class Relation:
     def has_edge(self, node1, node2):
         return node2 in self.succ[node1]
 
-    def get_number_of_nodes(self):
-        return len(self.nodes)
-
     def get_number_of_edges(self):
         result = 0
-        for node in self.nodes:
+        for node in self.succ:
             result += len(self.succ[node])
         return result
 
@@ -96,7 +88,7 @@ class Relation:
     # Returns the set of all nodes that have at least one successor.
     def get_nodes_with_a_successor(self):
         result = set()
-        for node in self.nodes:
+        for node in self.succ:
             if len(self.succ[node]) > 0:
                 result.add(node)
         return result
@@ -104,7 +96,7 @@ class Relation:
     # Returns the set of all nodes that have at least one predecessor.
     def get_nodes_with_a_predecessor(self):
         result = set()
-        for node in self.nodes:
+        for node in self.pred:
             if len(self.pred[node]) > 0:
                 result.add(node)
         return result
@@ -112,18 +104,33 @@ class Relation:
     # Returns the set of all nodes that have a selfloop.
     def get_nodes_with_a_selfloop(self):
         selfloops = set()
-        for node in self.nodes:
-            if node in self.green_succ[node]:
+        for node in self.succ:
+            if node in self.succ[node]:
                 selfloops.add(node)
         return selfloops
 
-    # Returns the set of roots. A node v is a root, if every node is reachable from v via a directed path.
-    def get_roots(self):
-        for node in self.nodes:
-            reachable = self.get_reachable_nodes(node)
-            if set(self.nodes).issubset(reachable):
+    def get_nodes_reachable_from_a_selfloop(self):
+        result = set()
+        for node in self.get_nodes_with_a_selfloop():
+            result = result.union(self.get_reachable_nodes(node))
+        return result
+
+    # Returns True if there is a node that has a selfloop and such that all nodes are reachable from there.
+    def has_selfloop_that_can_reach_all(self):
+        all_nodes = set(self.succ.keys())
+        for node in self.get_nodes_with_a_selfloop():
+            if self.get_reachable_nodes(node) == all_nodes:
                 return True
         return False
+
+    # Returns True if there is a node that has a selfloop and such that all nodes are reachable from there.
+    def get_selfloops_that_can_reach_all(self):
+        selfloops_that_can_reach_all = set()
+        all_nodes = set(self.succ.keys())
+        for node in self.get_nodes_with_a_selfloop():
+            if self.get_reachable_nodes(node) == all_nodes:
+                selfloops_that_can_reach_all.add(node)
+        return selfloops_that_can_reach_all
 
     # Removes all outgoing edges of the given node.
     def remove_all_successors(self, node):
@@ -131,13 +138,14 @@ class Relation:
         for node2 in to_remove:
             self.remove_edge(node, node2)
 
-    def to_code(self):
-        number_of_nodes = len(self.nodes)
+    # Given an ordered list of the nodes, this function computes the code of this relation.
+    def to_code(self, nodes):
+        number_of_nodes = len(nodes)
         code = 0
         current_bit = 1
         for i in range(number_of_nodes):
             for j in range(number_of_nodes):
-                if self.has_edge(self.nodes[i], self.nodes[j]):
+                if self.has_edge(nodes[i], nodes[j]):
                     code += current_bit
                 current_bit *= 2
         return number_of_nodes, code
@@ -146,7 +154,7 @@ class Relation:
     # The renaming has to be a dictionary, the keys are the nodes, the values are the new names.
     def rename(self, renaming):
         new_relation = Relation()
-        for node in self.nodes:
+        for node in self.succ:
             new_relation.add_node(renaming[node])
         for node in self.succ:
             for node2 in self.succ[node]:
@@ -158,34 +166,28 @@ class Relation:
         return len(self.pred[node1].intersection(self.pred[node2])) > 0
 
     def has_selfloop(self):
-        for x in self.nodes:
-            if self.has_edge(x, x):
+        for node in self.succ:
+            if self.has_edge(node, node):
                 return True
         return False
 
     # Computes the composition of this relation with the given relation.
     def compose(self, rel2):
-        if not set(self.nodes) == set(rel2.nodes):
-            raise ValueError("These relations are not defined on the same domain. Cannot compose them.")
         composition = Relation()
-        for node in self.nodes:
+        for node in self.succ:
             composition.add_node(node)
-        for node in self.nodes:
+        for node in self.succ:
             for pred in self.pred[node]:
                 for succ in rel2.succ[node]:
                     composition.add_edge(pred, succ)
 
     def __eq__(self, other):
-        if set(self.nodes) != set(other.nodes):
+        if set(self.succ.keys()) != set(other.succ.keys()):
             return False
-        for node in self.nodes:
+        for node in self.succ:
             if self.succ[node] != other.succ[node]:
                 return False
         return True
 
-    def log(self, nodes_and_edges=False):
-        print("Number of Nodes: " + str(len(self.nodes)))
-        if nodes_and_edges:
-            print("Nodes: " + str(self.nodes))
-            print("Edges: " + str(self.succ))
-        print("Selfloop: " + str(self.has_selfloop()))
+    def __repr__(self):
+        return str(self.succ)

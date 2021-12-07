@@ -21,7 +21,7 @@ def check_pattern(number_of_nodes, code):
     pattern = Pattern.from_code(number_of_nodes, code)
 
     # some preprocessing
-    if pattern.has_selfloop():
+    if pattern.has_double_selfloop():
         return 1
     if not pattern.has_green_selfloop() or not pattern.has_red_selfloop():
         return 0
@@ -38,14 +38,14 @@ def check_pattern(number_of_nodes, code):
 
     # iterate L
     for i in range(9):
-        if pattern.has_selfloop():
+        if pattern.has_double_selfloop():
             return 3
         num_nodes = pattern.get_number_of_nodes()
         num_red_edges = pattern.get_number_of_red_edges()
         num_green_edges = pattern.get_number_of_green_edges()
         if num_nodes > 100:
             return 5
-        pattern = pattern.L()
+        pattern = pattern.lifting()
         pattern = pattern.normalize_names()
         gc.collect()  # call garbage collector to free memory
         pattern.remove_useless_nodes()

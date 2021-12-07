@@ -1,28 +1,32 @@
 from random import randint
+from relation import Relation
+
 
 class Pattern:
 
-    def __init__(self):
-        self.nodes = []
-        self.red_succ = {}
-        self.green_succ = {}
-        self.red_pred = {}
-        self.green_pred = {}
+    def __init__(self, nodes, green, red):
+        self.nodes = nodes
+        self.green = green
+        self.red = red
 
     @classmethod
-    def from_edge_lists(cls, nodes, red, green):
-        pattern = cls()
+    def empty_pattern(cls):
+        return cls([], Relation(), Relation())
+
+    @classmethod
+    def from_edge_lists(cls, nodes, red_edges, green_edges):
+        pattern = cls.empty_pattern()
         for node in nodes:
             pattern.add_node(node)
-        for (u, v) in red:
-            pattern.add_red_edge(u, v)
-        for (u, v) in green:
-            pattern.add_green_edge(u, v)
+        for (u, v) in red_edges:
+            pattern.red.add_edge(u, v)
+        for (u, v) in green_edges:
+            pattern.green.add_edge(u, v)
         return pattern
 
     @classmethod
     def random_pattern(cls, number_of_nodes):
-        pattern = cls()
+        pattern = cls.empty_pattern()
         for i in range(number_of_nodes):
             pattern.add_node(i)
         for u in pattern.nodes:
@@ -35,7 +39,7 @@ class Pattern:
 
     @classmethod
     def from_code(cls, number_of_nodes, code):
-        pattern = cls()
+        pattern = cls.empty_pattern()
         for i in range(number_of_nodes):
             pattern.add_node(i)
         for i in range(number_of_nodes):
@@ -50,105 +54,103 @@ class Pattern:
                 code = code // 2
         return pattern
 
+    def add_node(self, node):
+        if node not in self.nodes:
+            self.nodes.append(node)
+        self.red.add_node(node)
+        self.green.add_node(node)
+
+    def add_red_edge(self, node1, node2):
+        self.red.add_edge(node1, node2)
+
+    def add_green_edge(self, node1, node2):
+        self.green.add_edge(node1, node2)
+
+    def remove_red_edge(self, node1, node2):
+        self.red.remove_edge(node1, node2)
+
+    def remove_green_edge(self, node1, node2):
+        self.green.remove_edge(node1, node2)
+
+    def has_red_edge(self, node1, node2):
+        return self.red.has_edge(node1, node2)
+
+    def has_green_edge(self, node1, node2):
+        return self.green.has_edge(node1, node2)
+
+    def get_number_of_nodes(self):
+        return len(self.nodes)
+
+    def get_number_of_red_edges(self):
+        return self.red.get_number_of_edges()
+
+    def get_number_of_green_edges(self):
+        return self.green.get_number_of_edges()
+
+    def remove_node(self, node):
+        self.nodes.remove(node)
+        self.green.remove_node(node)
+        self.red.remove_node(node)
+
+    def get_red_predecessors(self, node):
+        return self.red.get_predecessors(node)
+
+    def get_red_successors(self, node):
+        return self.red.get_successors(node)
+
+    def get_green_predecessors(self, node):
+        return self.green.get_predecessors(node)
+
+    def get_green_successors(self, node):
+        return self.green.get_successors(node)
+
     def remove_useless_edges(self):
         # determine all nodes reachable from a selfloop
-        red = set() # nodes reachable from a red selfloop via red edges
-        green = set() # nodes reachable from a green selfloop via green edges
-        for node in self.nodes:
-            if node in self.red_succ[node]:
-                red.add(node)
-            if node in self.green_succ[node]:
-                green.add(node)
-        change = True
-        while(change):
-            change = False
-            num_red = len(red)
-            num_green = len(green)
-            for node in red:
-                red = red.union(self.red_succ[node])
-            for node in green:
-                green = green.union(self.green_succ[node])
-            if len(red) > num_red or len(green) > num_green:
-                change = True
+        good_green = self.green.get_nodes_reachable_from_a_selfloop()
+        good_red = self.red.get_nodes_reachable_from_a_selfloop()
 
         # if a node has an outgoing edge of color x, but is not reachable by a selfloop of color x, remove the edge
         for node in self.nodes:
-            if node not in red:
-                self.remove_all_red_successors(node)
-            if node not in green:
+            if node not in good_green:
                 self.remove_all_green_successors(node)
+            if node not in good_red:
+                self.remove_all_red_successors(node)
 
     # Returns the set of all nodes that are reachable from the given node via a directed path of red edges.
     def get_reachable_nodes_via_red(self, start):
-        red = set()
-        red.add(start)
-        change = True
-        while (change):
-            change = False
-            num_red = len(red)
-            for node in red:
-                red = red.union(self.red_succ[node])
-            if len(red) > num_red:
-                change = True
-        return red
+        return self.red.get_reachable_nodes(start)
 
     # Returns the set of all nodes that are reachable from the given node via a directed path of red edges.
     def get_reachable_nodes_via_green(self, start):
-        green = set()
-        green.add(start)
-        change = True
-        while (change):
-            change = False
-            num_green = len(green)
-            for node in green:
-                green = green.union(self.green_succ[node])
-            if len(green) > num_green:
-                change = True
-        return green
+        return self.green.get_reachable_nodes(start)
 
     # Returns the set of all nodes that have a red successor.
     def get_nodes_with_a_red_successor(self):
-        result = set()
-        for node in self.nodes:
-            if len(self.red_succ[node]) > 0:
-                result.add(node)
-        return result
+        return self.red.get_nodes_with_a_successor()
 
     # Returns the set of all nodes that have a green successor.
     def get_nodes_with_a_green_successor(self):
-        result = set()
-        for node in self.nodes:
-            if len(self.green_succ[node]) > 0:
-                result.add(node)
-        return result
+        return self.green.get_nodes_with_a_successor()
 
     # Returns the set of all nodes that have a red selfloop.
     def get_nodes_with_a_red_selfloop(self):
-        red_selfloops = set()
-        for node in self.nodes:
-            if node in self.red_succ[node]:
-                red_selfloops.add(node)
-        return red_selfloops
+        return self.red.get_nodes_with_a_selfloop()
 
     # Returns the set of all nodes that have a green selfloop.
     def get_nodes_with_a_green_selfloop(self):
-        green_selfloops = set()
-        for node in self.nodes:
-            if node in self.green_succ[node]:
-                green_selfloops.add(node)
-        return green_selfloops
+        return self.green.get_nodes_with_a_selfloop()
 
     # Checks whether there is a node v with a red selfloop such that every node with a red successor is reachable
     # from v via a directed path of red edges. If this is not the case, then the pattern can be ignored,
     # because there is an equivalent subset of the pattern.
     def check_red_connected(self):
-        red_selfloops = self.get_nodes_with_a_red_selfloop()
-        nodes_with_red_successor = self.get_nodes_with_a_red_successor()
-        for node in red_selfloops:
-            reachable = self.get_reachable_nodes_via_red(node)
-            if nodes_with_red_successor.issubset(reachable):
-                return True
-        return False
+        return self.red.has_selfloop_that_can_reach_all()
+
+    # Checks whether there is a node v with a green selfloop such that every node with a green successor is reachable
+    # from v via a directed path of green edges. If this is not the case, then the pattern can be ignored,
+    # because there is an equivalent subset of the pattern.
+    def check_green_connected(self):
+        return self.green.has_selfloop_that_can_reach_all()
 
     # Checks whether the code describes a pattern in normal form.
     # Normal form means, that there are at least as many green
@@ -178,39 +180,23 @@ class Pattern:
                 return False
         return True
 
-    # Checks whether there is a node v with a green selfloop such that every node with a green successor is reachable
-    # from v via a directed path of green edges. If this is not the case, then the pattern can be ignored,
-    # because there is an equivalent subset of the pattern.
-    def check_green_connected(self):
-        green_selfloops = self.get_nodes_with_a_green_selfloop()
-        nodes_with_green_successor = self.get_nodes_with_a_green_successor()
-        for node in green_selfloops:
-            reachable = self.get_reachable_nodes_via_green(node)
-            if nodes_with_green_successor.issubset(reachable):
-                return True
-        return False
-
     # removes all red successors of the given node
     def remove_all_red_successors(self, node):
-        to_remove = set(self.red_succ[node])
-        for node2 in to_remove:
-            self.remove_red_edge(node, node2)
+        self.red.remove_all_successors(node)
 
     # removes all green successors of the given node
     def remove_all_green_successors(self, node):
-        to_remove = set(self.green_succ[node])
-        for node2 in to_remove:
-            self.remove_green_edge(node, node2)
+        self.green.remove_all_successors(node)
 
     # Returns whether there are nodes without successor, without green predecessor, without red predecessor,
     # or dominated by another node.
     def has_useless_nodes(self):
         # Is there a node with missing successors or predecessors?
         for node in self.nodes:
-            red_successor = len(self.red_succ[node]) > 0
-            red_predecessor = len(self.red_pred[node]) > 0
-            green_successor = len(self.green_succ[node]) > 0
-            green_predecessor = len(self.green_pred[node]) > 0
+            red_successor = len(self.red.succ[node]) > 0
+            red_predecessor = len(self.red.pred[node]) > 0
+            green_successor = len(self.green.succ[node]) > 0
+            green_predecessor = len(self.green.pred[node]) > 0
             if not red_predecessor or not green_predecessor:
                 return True
             if not red_successor and not green_successor:
@@ -220,14 +206,14 @@ class Pattern:
         for a in self.nodes:
             for b in self.nodes:
                 if a != b:
-                    if self.red_pred[a].issubset(self.red_pred[b]) and \
-                            self.red_succ[a].issubset(self.red_succ[b]) and \
-                            self.green_pred[a].issubset(self.green_pred[b]) and \
-                            self.green_succ[a].issubset(self.green_succ[b]):
+                    if self.red.pred[a].issubset(self.red.pred[b]) and \
+                            self.red.succ[a].issubset(self.red.succ[b]) and \
+                            self.green.pred[a].issubset(self.green.pred[b]) and \
+                            self.green.succ[a].issubset(self.green.succ[b]):
                         return True
-                    if self.red_pred[b].issubset(self.red_pred[a]) and self.red_succ[b].issubset(self.red_succ[a]) and \
-                            self.green_pred[b].issubset(self.green_pred[a]) and self.green_succ[b].issubset(
-                            self.green_succ[a]):
+                    if self.red.pred[b].issubset(self.red.pred[a]) and self.red.succ[b].issubset(self.red.succ[a]) and \
+                            self.green.pred[b].issubset(self.green.pred[a]) and self.green.succ[b].issubset(
+                            self.green.succ[a]):
                         return True
         return False
 
@@ -256,88 +242,9 @@ class Pattern:
         renaming = {}
         for i in range(number_of_nodes):
             renaming[self.nodes[i]] = i
-        for node in self.red_succ:
-            for node2 in self.red_succ[node]:
-                new_red_edges.append((renaming[node], renaming[node2]))
-        for node in self.green_succ:
-            for node2 in self.green_succ[node]:
-                new_green_edges.append((renaming[node], renaming[node2]))
-        return self.from_edge_lists(new_nodes, new_red_edges, new_green_edges)
-
-    def add_node(self, node):
-        self.nodes.append(node)
-        self.red_succ[node] = set()
-        self.green_succ[node] = set()
-        self.red_pred[node] = set()
-        self.green_pred[node] = set()
-
-    def add_red_edge(self, node1, node2):
-        self.red_succ[node1].add(node2)
-        self.red_pred[node2].add(node1)
-
-    def add_green_edge(self, node1, node2):
-        self.green_succ[node1].add(node2)
-        self.green_pred[node2].add(node1)
-
-    def remove_red_edge(self, node1, node2):
-        self.red_succ[node1].remove(node2)
-        self.red_pred[node2].remove(node1)
-
-    def remove_green_edge(self, node1, node2):
-        self.green_succ[node1].remove(node2)
-        self.green_pred[node2].remove(node1)
-
-    def has_red_edge(self, node1, node2):
-        return node2 in self.red_succ[node1]
-
-    def has_green_edge(self, node1, node2):
-        return node2 in self.green_succ[node1]
-
-    def get_number_of_nodes(self):
-        return len(self.nodes)
-
-    def get_number_of_red_edges(self):
-        result = 0
-        for node in self.red_succ:
-            result += len(self.red_succ[node])
-        return result
-
-    def get_number_of_green_edges(self):
-        result = 0
-        for node in self.green_succ:
-            result += len(self.green_succ[node])
-        return result
-
-    def remove_node(self, node):
-        self.nodes.remove(node)
-        del self.red_succ[node]
-        del self.green_succ[node]
-        del self.red_pred[node]
-        del self.green_pred[node]
-        for a in self.red_succ:
-            if node in self.red_succ[a]:
-                self.red_succ[a].remove(node)
-        for a in self.green_succ:
-            if node in self.green_succ[a]:
-                self.green_succ[a].remove(node)
-        for a in self.red_pred:
-            if node in self.red_pred[a]:
-                self.red_pred[a].remove(node)
-        for a in self.green_pred:
-            if node in self.green_pred[a]:
-                self.green_pred[a].remove(node)
-
-    def get_red_predecessors(self, node):
-        return self.red_pred[node]
-
-    def get_red_successors(self, node):
-        return self.red_succ[node]
-
-    def get_green_predecessors(self, node):
-        return self.green_pred[node]
-
-    def get_green_successors(self, node):
-        return self.green_succ[node]
+        new_red = self.red.rename(renaming)
+        new_green = self.green.rename(renaming)
+        return Pattern(new_nodes, new_green, new_red)
 
     def get_useless_nodes(self):
 
@@ -345,16 +252,14 @@ class Pattern:
 
         # nodes that have missing successors or predecessors
         for node in self.nodes:
-            red_successor = len(self.red_succ[node]) > 0
-            red_predecessor = len(self.red_pred[node]) > 0
-            green_successor = len(self.green_succ[node]) > 0
-            green_predecessor = len(self.green_pred[node]) > 0
+            red_successor = len(self.red.succ[node]) > 0
+            red_predecessor = len(self.red.pred[node]) > 0
+            green_successor = len(self.green.succ[node]) > 0
+            green_predecessor = len(self.green.pred[node]) > 0
             if not red_predecessor or not green_predecessor:
                 useless_nodes.add(node)
-                #print("Node " + str(node) + " does not have both colored predecessors and will be removed.")
             if not red_successor and not green_successor:
                 useless_nodes.add(node)
-                #print("Node " + str(node) + " does not have any successors and will be removed.")
 
         # nodes dominated by other nodes
         for i in range(len(self.nodes)):
@@ -363,21 +268,19 @@ class Pattern:
                 b = self.nodes[j]
                 a_dominates_b = False
                 b_dominates_a = False
-                if self.red_pred[a].issubset(self.red_pred[b]) and \
-                        self.red_succ[a].issubset(self.red_succ[b]) and \
-                        self.green_pred[a].issubset(self.green_pred[b]) and \
-                        self.green_succ[a].issubset(self.green_succ[b]):
+                if self.red.pred[a].issubset(self.red.pred[b]) and \
+                        self.red.succ[a].issubset(self.red.succ[b]) and \
+                        self.green.pred[a].issubset(self.green.pred[b]) and \
+                        self.green.succ[a].issubset(self.green.succ[b]):
                     b_dominates_a = True
-                if self.red_pred[b].issubset(self.red_pred[a]) and self.red_succ[b].issubset(self.red_succ[a]) and \
-                        self.green_pred[b].issubset(self.green_pred[a]) and self.green_succ[b].issubset(
-                        self.green_succ[a]):
+                if self.red.pred[b].issubset(self.red.pred[a]) and self.red.succ[b].issubset(self.red.succ[a]) and \
+                        self.green.pred[b].issubset(self.green.pred[a]) and self.green.succ[b].issubset(
+                        self.green.succ[a]):
                     a_dominates_b = True
                 if a_dominates_b:
                     useless_nodes.add(b)
-                    #print("Node " + str(b) + " is dominated by " + str(a) + " and will be removed.")
                 elif b_dominates_a:
                     useless_nodes.add(a)
-                    #print("Node " + str(a) + " is dominated by " + str(b) + " and will be removed.")
 
         return useless_nodes
 
@@ -390,16 +293,16 @@ class Pattern:
                 change_was_made = True
                 self.remove_node(node)
 
-    # returns True if node1 and node2 have a common red predecessor
-    def common_red_pred(self, node1, node2):
-        return len(self.red_pred[node1].intersection(self.red_pred[node2])) > 0
-
     # returns True if node1 and node2 have a common green predecessor
     def common_green_pred(self, node1, node2):
-        return len(self.green_pred[node1].intersection(self.green_pred[node2])) > 0
+        return self.green.common_pred(node1, node2)
 
-    def L(self):
-        prod = Pattern()
+    # returns True if node1 and node2 have a common red predecessor
+    def common_red_pred(self, node1, node2):
+        return self.red.common_pred(node1, node2)
+
+    def lifting(self):
+        prod = self.empty_pattern()
         for i in range(len(self.nodes)):
             for j in range(i, len(self.nodes)):
                 # filter out nodes that will not have a green and a red predecessor in L(P)
@@ -415,21 +318,15 @@ class Pattern:
                     prod.add_green_edge((u1,u2), (v1,v2))
         return prod
 
-    def has_selfloop(self):
-        for x in self.nodes:
-            if self.has_red_edge(x, x) and self.has_green_edge(x, x):
-                return True
-        return False
-
     def has_green_selfloop(self):
-        for x in self.nodes:
-            if self.has_green_edge(x, x):
-                return True
-        return False
+        return self.green.has_selfloop()
 
     def has_red_selfloop(self):
+        return self.red.has_selfloop()
+
+    def has_double_selfloop(self):
         for x in self.nodes:
-            if self.has_red_edge(x, x):
+            if self.has_red_edge(x, x) and self.has_green_edge(x, x):
                 return True
         return False
 
@@ -437,6 +334,6 @@ class Pattern:
         print("Number of Nodes: " + str(len(self.nodes)))
         if nodes_and_edges:
             print("Nodes: " + str(self.nodes))
-            print("Green: " + str(self.green_succ))
-            print("Red:   " + str(self.red_succ))
-        print("Selfloop: " + str(self.has_selfloop()))
+            print("Green: " + str(self.green.succ))
+            print("Red:   " + str(self.red.succ))
+        print("Selfloop: " + str(self.has_double_selfloop()))
