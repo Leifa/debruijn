@@ -199,9 +199,30 @@ def check_patterns_from_file(input, output):
     print(f"Checked {total} patterns.")
     print(f"{total-count} were solved now.")
 
+def filter_patterns_using_first_path_condition_with_caleygraph(input, output):
+    input_file = open(input, "r")
+    output_file = open(output, "a")
+    count = 0
+    total = 0
+    for line in input_file:
+        number_of_nodes, code = line.split(",")
+        pattern = Pattern.from_code(int(number_of_nodes), int(code))
+        caley_graph = caleygraph.CaleyGraph(pattern)
+        if caley_graph.check_first_path_condition():
+            count += 1
+            output_file.write(f"{number_of_nodes},{code}")
+        else:
+            pattern.log(True)
+        total += 1
+        print(total)
+    input_file.close()
+    output_file.close()
+    print(f"Checked {total} patterns.")
+    print(f"{count} of them satisfied the first path condition, {total-count} did not.")
+
 start_time = time.time()
 
-#filter_patterns_using_first_path_condition("unsolved.txt", "new2.txt")
+filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
 
 #check_patterns_from_file("unsolved.txt", "new3.txt")
 
@@ -209,15 +230,7 @@ start_time = time.time()
 #pattern.log(True)
 #check_pattern(4,2063974806)
 
-max = 0
-for i in range(2**20):
-    if i % 10000 == 0:
-        print(i)
-    pattern = Pattern.from_code(4,i)
-    cg = caleygraph.compute_caley_graph(pattern)
-    if cg.get_number_of_nodes() > max:
-        max = cg.get_number_of_nodes()
-print(f"Max: {max}")
+
 
 #check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
 

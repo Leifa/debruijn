@@ -171,6 +171,28 @@ class Relation:
                 return True
         return False
 
+    def union(self, other):
+        union = Relation()
+        for node in self.succ:
+            union.add_node(node)
+        for node in self.succ:
+            for succ in self.succ[node]:
+                union.add_edge(node, succ)
+            for succ in other.succ[node]:
+                union.add_edge(node, succ)
+        return union
+
+    def transitive_closure(self):
+        tc = self
+        change = True
+        while change:
+            change = False
+            number_of_edges = tc.get_number_of_edges()
+            tc = tc.union(tc.compose(self))
+            if tc.get_number_of_edges() > number_of_edges:
+                change = True
+        return tc
+
     # Computes the composition of this relation with the given relation.
     def compose(self, rel2):
         composition = Relation()
@@ -181,6 +203,10 @@ class Relation:
                 for succ in rel2.succ[node]:
                     composition.add_edge(pred, succ)
         return composition
+
+    # Returns whether the given node is a predecessor of every node.
+    def sees_all(self, node):
+        return self.succ[node] == set(self.succ.keys())
 
     def __eq__(self, other):
         if set(self.succ.keys()) != set(other.succ.keys()):

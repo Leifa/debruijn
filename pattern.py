@@ -330,6 +330,25 @@ class Pattern:
                 return True
         return False
 
+    # Takes a word (a list like [0, 1, 1]) and returns the set of all nodes that see themselves under this word.
+    def get_relation_from_word(self, word):
+
+        # Every node sees itself under the empty word
+        if len(word) == 0:
+            return set(self.nodes)
+
+        relation = Relation.diagonal(len(self.nodes))
+
+        for i in range(len(word)):
+            if word[i] == 0:
+                relation = relation.compose(self.green)
+            elif word[i] == 1:
+                relation = relation.compose(self.red)
+            else:
+                raise ValueError("Not an array of Ones and Zeros.")
+
+        return relation
+
     def log(self, nodes_and_edges=False):
         print("Number of Nodes: " + str(len(self.nodes)))
         if nodes_and_edges:
