@@ -208,6 +208,12 @@ class Relation:
     def sees_all(self, node):
         return self.succ[node] == set(self.succ.keys())
 
+    def has_node_that_sees_all(self):
+        for node in self.succ:
+            if self.sees_all(node):
+                return True
+        return False
+
     def __eq__(self, other):
         if set(self.succ.keys()) != set(other.succ.keys()):
             return False

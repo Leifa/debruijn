@@ -48,7 +48,9 @@ class CaleyGraph:
 
     def check_first_path_condition(self):
         finite = self.get_nodes_reachable_by_finitely_many_words()
-        finite.remove(self.start.to_code(self.pattern.nodes))
+        diag = self.start.to_code(self.pattern.nodes)
+        if diag in finite:
+            finite.remove(diag)
         for number, code in finite:
             rel = Relation.from_code(number, code)
             selfloops = rel.get_nodes_with_a_selfloop()
@@ -70,5 +72,13 @@ class CaleyGraph:
                     break
             if not found_candidate:
                 print(f"Not found a candidate for relation {rel}")
+                return False
+        return True
+
+    def check_second_path_condition(self):
+        infinite = self.get_nodes_reachable_by_infinitely_many_words()
+        for number, code in infinite:
+            rel = Relation.from_code(number, code)
+            if not rel.has_node_that_sees_all():
                 return False
         return True

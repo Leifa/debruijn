@@ -220,6 +220,27 @@ def filter_patterns_using_first_path_condition_with_caleygraph(input, output):
     print(f"Checked {total} patterns.")
     print(f"{count} of them satisfied the first path condition, {total-count} did not.")
 
+def filter_patterns_using_second_path_condition_with_caleygraph(input, output):
+    input_file = open(input, "r")
+    output_file = open(output, "a")
+    count = 0
+    total = 0
+    for line in input_file:
+        number_of_nodes, code = line.split(",")
+        pattern = Pattern.from_code(int(number_of_nodes), int(code))
+        caley_graph = caleygraph.CaleyGraph(pattern)
+        if caley_graph.check_second_path_condition():
+            count += 1
+            output_file.write(f"{number_of_nodes},{code}")
+        else:
+            pattern.log(True)
+        total += 1
+        print(total)
+    input_file.close()
+    output_file.close()
+    print(f"Checked {total} patterns.")
+    print(f"{count} of them satisfied the second path condition, {total-count} did not.")
+
 start_time = time.time()
 
 filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
