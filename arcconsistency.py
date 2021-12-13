@@ -19,6 +19,18 @@ class ArcConsistency:
     def log_candidate_sets(self):
         print(self.candidates)
 
+    def is_homo(self):
+        for node in self.candidates:
+            if len(self.candidates[node]) != 1:
+                return False
+        return True
+
+    def is_contradiction(self):
+        for node in self.candidates:
+            if len(self.candidates[node]) == 0:
+                return True
+        return False
+
     def do_arc_consistency(self):
         change = True
         while change:
@@ -61,7 +73,7 @@ class ArcConsistency:
                                 found_witness = True
                                 break
                         if not found_witness:
-                            print(f"Edge {node1}-{node2} first node candidate {candidate1} removed")
+                            #print(f"Edge {node1}-{node2} first node candidate {candidate1} removed")
                             self.candidates[node1].remove(candidate1)
                             break
                     for candidate2 in self.candidates[node2]:
@@ -73,7 +85,7 @@ class ArcConsistency:
                                 found_witness = True
                                 break
                         if not found_witness:
-                            print(f"Edge {node1}-{node2} second node candidate {candidate2} removed")
+                            #print(f"Edge {node1}-{node2} second node candidate {candidate2} removed")
                             self.candidates[node2].remove(candidate2)
                             break
 
@@ -81,6 +93,8 @@ class ArcConsistency:
                 if len(self.candidates[node1]) == 0:
                     return
 
+            change = True
             new_total_number_of_candidates = sum(len(list) for list in self.candidates.values())
             if new_total_number_of_candidates == total_number_of_candidates:
                 change = False
+
