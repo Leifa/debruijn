@@ -54,6 +54,23 @@ class Pattern:
                 code = code // 2
         return pattern
 
+    @classmethod
+    def T_n(cls, n):
+        pattern = cls.empty_pattern()
+        if n == 0:
+            pattern.add_node(0)
+            pattern.add_red_edge(0, 0)
+            pattern.add_green_edge(0, 0)
+            return pattern
+        for i in range(2**n):
+            pattern.add_node(i)
+        for i in range(2**(n-1)):
+            pattern.add_green_edge(i, 2*i)
+            pattern.add_green_edge(i, 2*i + 1)
+            pattern.add_red_edge(2**n - 1 - i, 2**n - 1 - 2*i)
+            pattern.add_red_edge(2**n - 1 - i, 2**n - 1 - 2*i - 1)
+        return pattern
+
     def add_node(self, node):
         if node not in self.nodes:
             self.nodes.append(node)

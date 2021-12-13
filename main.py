@@ -243,7 +243,10 @@ def filter_patterns_using_second_path_condition_with_caleygraph(input, output):
 
 start_time = time.time()
 
-filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
+#filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
+
+pattern = Pattern.T_n(5)
+pattern.log(True)
 
 #check_patterns_from_file("unsolved.txt", "new3.txt")
 
