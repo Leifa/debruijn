@@ -121,6 +121,12 @@ class Pattern:
     def get_green_successors(self, node):
         return self.green.get_successors(node)
 
+    def get_green_successors_of_set(self, s):
+        return self.green.get_successors_of_set(s)
+
+    def get_red_successors_of_set(self, s):
+        return self.red.get_successors_of_set(s)
+
     def remove_useless_edges(self):
         # determine all nodes reachable from a selfloop
         good_green = self.green.get_nodes_reachable_from_a_selfloop()
