@@ -87,6 +87,13 @@ class Pattern:
     def get_number_of_green_edges(self):
         return self.green.get_number_of_edges()
 
+    def get_indices_of_nodes(self, set_of_nodes):
+        indices = []
+        for index in range(self.get_number_of_nodes()):
+            if self.nodes[index] in set_of_nodes:
+                indices.append(index)
+        return indices
+
     def remove_node(self, node):
         self.nodes.remove(node)
         self.green.remove_node(node)
