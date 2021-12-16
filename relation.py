@@ -71,6 +71,12 @@ class Relation:
     def get_successors(self, node):
         return self.succ[node]
 
+    def get_successors_of_set(self, s):
+        result = set()
+        for node in s:
+            result = result.union(self.succ[node])
+        return result
+
     # Returns the set of all nodes that are reachable from the given node via a directed path.
     def get_reachable_nodes(self, start):
         reachable = set()
