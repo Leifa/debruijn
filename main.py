@@ -276,9 +276,9 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
         number_of_nodes, code = line.split(",")
         pattern = Pattern.from_code(int(number_of_nodes), int(code))
         solved = False
-        hom_until = 12
+        hom_until = 13
         n = hom_until
-        while pattern.get_number_of_nodes() < 20:
+        while pattern.get_number_of_nodes() < 13:
             pattern = pattern.lifting().normalize_names()
             pattern.remove_useless_nodes()
             n = n - 1
@@ -310,7 +310,7 @@ start_time = time.time()
 
 #filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
 
-filter_patterns_using_sat_solver("unsolved.txt", "homo_at_12.txt", "unsolved_new.txt", 3500)
+filter_patterns_using_sat_solver("unsolved.txt", "homo_at_13.txt", "unsolved_new.txt", 2000)
 
 #check_patterns_from_file("unsolved.txt", "new3.txt")
 
