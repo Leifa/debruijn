@@ -3,9 +3,13 @@ import pysat.solvers
 class SatSolver:
 
     def __init__(self):
+        self.pattern1 = None
+        self.pattern2 = None
         self.solver = pysat.solvers.MapleChrono()
 
     def make_clauses(self, pattern1, pattern2):
+        self.pattern1 = pattern1
+        self.pattern2 = pattern2
         n1 = pattern1.get_number_of_nodes()
         n2 = pattern2.get_number_of_nodes()
 
@@ -48,6 +52,19 @@ class SatSolver:
 
     def has_homo(self):
         return self.solver.solve()
+
+    def get_homo(self):
+        assignment = self.solver.get_model()
+        homo = {}
+        n2 = self.pattern2.get_number_of_nodes()
+        for i in assignment:
+            if i > 0:
+                i = i - 1
+                node1 = i // n2
+                node2 = i % n2
+                homo[self.pattern1.nodes[node1]] = self.pattern2.nodes[node2]
+        return homo
+
 
     def delete(self):
         self.solver.delete()

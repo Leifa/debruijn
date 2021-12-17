@@ -71,6 +71,19 @@ class Pattern:
             pattern.add_red_edge(2**n - 1 - i, 2**n - 1 - 2*i - 1)
         return pattern
 
+    @staticmethod
+    def is_homo(pattern1, pattern2, mapping):
+        if mapping.keys() != set(pattern1.nodes):
+            return False
+        for node1 in pattern1.nodes:
+            for node2 in pattern1.get_green_successors(node1):
+                if not pattern2.has_green_edge(mapping[node1], mapping[node2]):
+                    return False
+            for node2 in pattern1.get_red_successors(node1):
+                if not pattern2.has_red_edge(mapping[node1], mapping[node2]):
+                    return False
+        return True
+
     def add_node(self, node):
         if node not in self.nodes:
             self.nodes.append(node)

@@ -276,19 +276,25 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
         number_of_nodes, code = line.split(",")
         pattern = Pattern.from_code(int(number_of_nodes), int(code))
         solved = False
-        n = 10
+        hom_until = 11
+        n = hom_until
+        while pattern.get_number_of_nodes() < 20:
+            pattern = pattern.lifting().normalize_names()
+            pattern.remove_useless_nodes()
+            n = n - 1
+        print(f"Check Homo from T_{n} to L^{hom_until-n}(P)")
         solver = satsolver.SatSolver()
-        solver.make_clauses(Pattern.T_n(n-2), pattern.lifting().lifting())
+        solver.make_clauses(Pattern.T_n(n), pattern)
         if solver.has_homo():
             solved = True
         solver.delete()
         del solver
         if solved:
-            print(colored(f'Homo at {n}', "green"))
+            print(colored(f'Homo at {hom_until}', "green"))
             solved_file.write(f"{number_of_nodes},{code}")
         else:
             count += 1
-            print(colored(f'No homo until 10', "red"))
+            print(colored(f'No homo until {hom_until}', "red"))
             unsolved_file.write(f"{number_of_nodes},{code}")
         total += 1
         print(total)
@@ -298,19 +304,19 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
     solved_file.close()
     unsolved_file.close()
     print(f"Checked {total} patterns.")
-    print(f"{total-count} have a hom at 10, {count} do not.")
+    print(f"{total-count} have a hom at {hom_until}, {count} do not.")
 
 start_time = time.time()
 
 #filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
 
-filter_patterns_using_sat_solver("unsolved.txt", "homo_at_10.txt", "unsolved_new.txt", 20000)
+filter_patterns_using_sat_solver("unsolved.txt", "homo_at_11.txt", "unsolved_new.txt", 6000)
 
 #check_patterns_from_file("unsolved.txt", "new3.txt")
 
 #check_pattern(4,47012414)
 
-
+#print(check_pattern(4,23731294))
 
 #check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
 
