@@ -276,9 +276,9 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
         number_of_nodes, code = line.split(",")
         pattern = Pattern.from_code(int(number_of_nodes), int(code))
         solved = False
-        n = 9
+        n = 10
         solver = satsolver.SatSolver()
-        solver.make_clauses(Pattern.T_n(n), pattern)
+        solver.make_clauses(Pattern.T_n(n-2), pattern.lifting().lifting())
         if solver.has_homo():
             solved = True
         solver.delete()
@@ -288,7 +288,7 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
             solved_file.write(f"{number_of_nodes},{code}")
         else:
             count += 1
-            print(colored(f'No homo until 9', "red"))
+            print(colored(f'No homo until 10', "red"))
             unsolved_file.write(f"{number_of_nodes},{code}")
         total += 1
         print(total)
@@ -298,13 +298,13 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
     solved_file.close()
     unsolved_file.close()
     print(f"Checked {total} patterns.")
-    print(f"{total-count} have a hom at 9, {count} do not.")
+    print(f"{total-count} have a hom at 10, {count} do not.")
 
 start_time = time.time()
 
 #filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
 
-filter_patterns_using_sat_solver("unsolved.txt", "homo_at_9.txt", "unsolved_new.txt", 20000)
+filter_patterns_using_sat_solver("unsolved.txt", "homo_at_10.txt", "unsolved_new.txt", 20000)
 
 #check_patterns_from_file("unsolved.txt", "new3.txt")
 
