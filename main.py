@@ -264,46 +264,51 @@ def filter_patterns_using_second_path_condition_with_caleygraph(input, output):
 #     print(f"Checked {total} patterns.")
 #     print(f"{total-count} of them are construction deterministic, {count} are not.")
 
-def filter_patterns_using_sat_solver(input, output):
+def filter_patterns_using_sat_solver(input, solved, unsolved, number):
     input_file = open(input, "r")
-    output_file = open(output, "a")
+    solved_file = open(solved, "a")
+    unsolved_file = open(unsolved, "a")
     count = 0
     total = 0
     for line in input_file:
+        if total == number:
+            break
         number_of_nodes, code = line.split(",")
         pattern = Pattern.from_code(int(number_of_nodes), int(code))
         solved = False
-        for n in range(8):
-            solver = satsolver.SatSolver()
-            solver.make_clauses(Pattern.T_n(n), pattern)
-            if solver.has_homo():
-                solved = True
-                break
+        n = 9
+        solver = satsolver.SatSolver()
+        solver.make_clauses(Pattern.T_n(n), pattern)
+        if solver.has_homo():
+            solved = True
         solver.delete()
         del solver
         if solved:
-            pattern.log(True)
+            print(colored(f'Homo at {n}', "green"))
+            solved_file.write(f"{number_of_nodes},{code}")
         else:
             count += 1
-            output_file.write(f"{number_of_nodes},{code}")
+            print(colored(f'No homo until 9', "red"))
+            unsolved_file.write(f"{number_of_nodes},{code}")
         total += 1
         print(total)
         del pattern
         gc.collect()
     input_file.close()
-    output_file.close()
+    solved_file.close()
+    unsolved_file.close()
     print(f"Checked {total} patterns.")
-    print(f"{total-count} have a hom at 9 or earlier, {count} do not.")
+    print(f"{total-count} have a hom at 9, {count} do not.")
 
 start_time = time.time()
 
 #filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
 
-filter_patterns_using_sat_solver("unsolved.txt", "new2.txt")
+filter_patterns_using_sat_solver("unsolved.txt", "homo_at_9.txt", "unsolved_new.txt", 20000)
 
 #check_patterns_from_file("unsolved.txt", "new3.txt")
 
-#check_pattern(4,2063974806)
+#check_pattern(4,47012414)
 
 
 
