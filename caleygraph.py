@@ -46,6 +46,8 @@ class CaleyGraph:
     def get_nodes_reachable_by_finitely_many_words(self):
         return set(self.caley_graph.nodes).difference(self.get_nodes_reachable_by_infinitely_many_words())
 
+    # The first path condition: For every relation R that is hit by finitely many words, there is a node in the
+    # pattern who sees itself under R and that sees every node under a multiple of R.
     def check_first_path_condition(self):
         finite = self.get_nodes_reachable_by_finitely_many_words()
         diag = self.start.to_code(self.pattern.nodes)
@@ -75,6 +77,8 @@ class CaleyGraph:
                 return False
         return True
 
+    # The second path condition: For every relation R that is hit by infinitely many words, there is a node in
+    # the pattern that sees every node of the pattern under R.
     def check_second_path_condition(self):
         infinite = self.get_nodes_reachable_by_infinitely_many_words()
         for number, code in infinite:
@@ -82,3 +86,12 @@ class CaleyGraph:
             if not rel.has_node_that_sees_all():
                 return False
         return True
+
+    # The third path condition: For every node in the pattern, there is a word w such that the node sees every
+    # node under w.
+    def check_third_path_condition(self):
+        nodes = set()
+        for (number, code) in self.caley_graph.nodes:
+            relation = Relation.from_code(number, code)
+            nodes = nodes.union(relation.get_nodes_that_see_all())
+        return nodes == set(self.pattern.nodes)

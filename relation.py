@@ -220,6 +220,13 @@ class Relation:
                 return True
         return False
 
+    def get_nodes_that_see_all(self):
+        nodes_that_see_all = set()
+        for node in self.succ:
+            if self.sees_all(node):
+                nodes_that_see_all.add(node)
+        return nodes_that_see_all
+
     def __eq__(self, other):
         if set(self.succ.keys()) != set(other.succ.keys()):
             return False

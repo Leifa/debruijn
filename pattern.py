@@ -393,9 +393,8 @@ class Pattern:
         return relation
 
     def log(self, nodes_and_edges=False):
-        print("Number of Nodes: " + str(len(self.nodes)))
+        print(f"Pattern {self.to_code()}")
         if nodes_and_edges:
             print("Nodes: " + str(self.nodes))
             print("Green: " + str(self.green.succ))
             print("Red:   " + str(self.red.succ))
-        print("Selfloop: " + str(self.has_double_selfloop()))

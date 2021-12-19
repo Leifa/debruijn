@@ -11,13 +11,6 @@ from nfa import Nfa
 from pattern import Pattern
 import caleygraph
 
-diverging_dreier = Pattern.from_code(3, 44199)
-converging = Pattern.from_code(4, 562287046)
-erstes_schwieriges_vierer = Pattern.from_code(4, 224412099)
-slow_square = Pattern.from_code(4, 3569496551)
-disconnected_red = Pattern.from_code(4, 2954840)
-long_four = Pattern.from_code(4, 3937948)
-
 def check_pattern(number_of_nodes, code):
 
     #if not Pattern.check_code_normal_form(number_of_nodes, code):
@@ -308,9 +301,12 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
 
 start_time = time.time()
 
+check_pattern(4,2458141589)
+
+
 #filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
 
-filter_patterns_using_sat_solver("unsolved.txt", "homo_at_20.txt", "unsolved_new.txt", 1000)
+#filter_patterns_using_sat_solver("unsolved.txt", "homo_at_20.txt", "unsolved_new.txt", 1000)
 
 #check_patterns_from_file("unsolved.txt", "new3.txt")
 
