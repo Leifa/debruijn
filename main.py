@@ -1,19 +1,21 @@
 import gc
+import random
 from multiprocessing import Process
 import time
 
 from termcolor import colored
 
-#import constructiondeterministic
+import caleygraph
+import constructiondeterministic
 
 import satsolver
 from nfa import Nfa
 from pattern import Pattern
-import caleygraph
+from caleygraph import CaleyGraph
+
 
 def check_pattern(number_of_nodes, code):
-
-    #if not Pattern.check_code_normal_form(number_of_nodes, code):
+    # if not Pattern.check_code_normal_form(number_of_nodes, code):
     #    return 6
     pattern = Pattern.from_code(number_of_nodes, code)
 
@@ -50,9 +52,86 @@ def check_pattern(number_of_nodes, code):
                 num_red_edges == pattern.get_number_of_red_edges() and \
                 num_green_edges == pattern.get_number_of_green_edges():
             return 4
-        #pattern.log(True)
+        # pattern.log(True)
         print(len(pattern.nodes))
     return 5
+
+
+def log_pattern(number_of_nodes, code):
+    YES = colored("YES", "green")
+    NO = colored("NO", "red")
+    pattern = Pattern.from_code(number_of_nodes, code)
+    cg = CaleyGraph(pattern)
+    normal_form = Pattern.check_code_normal_form(number_of_nodes, code)
+    first_pc = cg.check_first_path_condition()
+    second_pc = cg.check_second_path_condition()
+    third_pc = cg.check_third_path_condition()
+    const_nondet = not constructiondeterministic.is_construction_deterministic(pattern)
+    homo_at = -1
+    solved = False
+    if not const_nondet or not first_pc or not second_pc or not third_pc:
+        solved = True
+
+    print(f"==== Pattern {number_of_nodes}:{code} ====")
+    pattern.log(True)
+    print(f"Normal form:           {YES if normal_form else NO}")
+    print(f"First path condition:  {YES if first_pc else NO}")
+    print(f"Second path condition: {YES if second_pc else NO}")
+    print(f"Third path condition:  {YES if third_pc else NO}")
+    print(f"Construction nondet.:  {YES if const_nondet else NO}")
+    if solved:
+        print(colored("No surjective homomorphism", "red"))
+
+    pattern.remove_useless_nodes()
+    pattern.remove_useless_edges()
+    liftings = [pattern]
+    last = pattern
+    print("Lifting sizes:         ", end="")
+    for i in range(10):
+        if last.get_number_of_nodes() > 30:
+            print(f"{last.get_number_of_nodes()}")
+            break
+        else:
+            if i < 9:
+                print(f"{last.get_number_of_nodes()}, ", end="")
+            else:
+                print(f"{last.get_number_of_nodes()}, ")
+        lifting = last.lifting()
+        lifting.normalize_names()
+        lifting.remove_useless_nodes()
+        last = lifting
+        liftings.append(last)
+
+    if solved:
+        return
+
+    best = 0
+    for i in range(len(liftings) - 1):
+        if liftings[i + 1].get_number_of_nodes() / liftings[i].get_number_of_nodes() < 2:
+            best = i
+    for i in range(best+1):
+        if liftings[i].has_double_selfloop():
+            homo_at = i
+            solved = True
+            print(colored(f"Homomorphism at:       {homo_at}", "green"))
+            return
+
+    if not solved:
+        print(f"No hom until:          {best-1}", end="")
+
+    for n in range(best, best + 20):
+        solver = satsolver.SatSolver()
+        solver.make_clauses(Pattern.T_n(n - best), liftings[best])
+        if solver.has_homo():
+            solved = True
+            homo_at = n
+            print(colored(f"\nHomomorphism at:      {homo_at}", "green"))
+        else:
+            print(f", {n}", end="")
+        solver.delete()
+        del solver
+        if solved:
+            break
 
 
 def check_pattern_range(start, finish, filename):
@@ -81,10 +160,10 @@ def check_pattern_range(start, finish, filename):
         #     print(str(code) + ": " + colored("UNKNOWN", "red"))
         # if result == 6:
         #     print(str(code) + ": " + colored("No Normal Form", "yellow"))
-    #print(results)
+    # print(results)
+
 
 def check_pattern_range_multicore(start, finish, batch_size, cores, filename):
-
     # Calculate how many batches and initialize batch counter
     batches = (finish - start) // batch_size
     current_batch = 0
@@ -92,7 +171,8 @@ def check_pattern_range_multicore(start, finish, batch_size, cores, filename):
 
     # Start the processes
     while current_batch < cores:
-        p = Process(target=check_pattern_range, args=(start+batch_size*current_batch, start+batch_size*(current_batch+1), f"{current_batch}.txt"))
+        p = Process(target=check_pattern_range, args=(
+        start + batch_size * current_batch, start + batch_size * (current_batch + 1), f"{current_batch}.txt"))
         current_batch += 1
         p.start()
         processes.append(p)
@@ -103,7 +183,8 @@ def check_pattern_range_multicore(start, finish, batch_size, cores, filename):
         time.sleep(1)
         for i in range(len(processes)):
             if current_batch < batches and not processes[i].is_alive():
-                p = Process(target=check_pattern_range, args=(start+batch_size*current_batch, start+batch_size*(current_batch+1), f"{current_batch}.txt"))
+                p = Process(target=check_pattern_range, args=(
+                start + batch_size * current_batch, start + batch_size * (current_batch + 1), f"{current_batch}.txt"))
                 current_batch += 1
                 p.start()
                 processes[i] = p
@@ -124,6 +205,7 @@ def check_pattern_range_multicore(start, finish, batch_size, cores, filename):
             pass
     f.close()
 
+
 def filter_patterns_using_third_path_condition(input, output):
     input_file = open(input, "r")
     output_file = open(output, "a")
@@ -142,7 +224,8 @@ def filter_patterns_using_third_path_condition(input, output):
     input_file.close()
     output_file.close()
     print(f"Checked {total} patterns.")
-    print(f"{count} of them satisfied the third path condition, {total-count} did not.")
+    print(f"{count} of them satisfied the third path condition, {total - count} did not.")
+
 
 def filter_patterns_using_first_path_condition(input, output):
     input_file = open(input, "r")
@@ -153,7 +236,7 @@ def filter_patterns_using_first_path_condition(input, output):
         number_of_nodes, code = line.split(",")
         nfa = Nfa.from_pattern_code(int(number_of_nodes), int(code))
         all = nfa.states
-        #print(nfa)
+        # print(nfa)
         nfa = nfa.power_nfa(full=True)
         nfa.clear_final_states()
         nfa.clear_start_states()
@@ -165,13 +248,14 @@ def filter_patterns_using_first_path_condition(input, output):
             output_file.write(f"{number_of_nodes},{code}")
         else:
             pattern = Pattern.from_code(int(number_of_nodes), int(code))
-            #pattern.log(True)
+            # pattern.log(True)
         total += 1
         print(total)
     input_file.close()
     output_file.close()
     print(f"Checked {total} patterns.")
-    print(f"{count} of them satisfied the first path condition, {total-count} did not.")
+    print(f"{count} of them satisfied the first path condition, {total - count} did not.")
+
 
 def check_patterns_from_file(input, output):
     input_file = open(input, "r")
@@ -193,7 +277,8 @@ def check_patterns_from_file(input, output):
     input_file.close()
     output_file.close()
     print(f"Checked {total} patterns.")
-    print(f"{total-count} were solved now.")
+    print(f"{total - count} were solved now.")
+
 
 def filter_patterns_using_first_path_condition_with_caleygraph(input, output):
     input_file = open(input, "r")
@@ -214,7 +299,8 @@ def filter_patterns_using_first_path_condition_with_caleygraph(input, output):
     input_file.close()
     output_file.close()
     print(f"Checked {total} patterns.")
-    print(f"{count} of them satisfied the first path condition, {total-count} did not.")
+    print(f"{count} of them satisfied the first path condition, {total - count} did not.")
+
 
 def filter_patterns_using_second_path_condition_with_caleygraph(input, output):
     input_file = open(input, "r")
@@ -235,7 +321,8 @@ def filter_patterns_using_second_path_condition_with_caleygraph(input, output):
     input_file.close()
     output_file.close()
     print(f"Checked {total} patterns.")
-    print(f"{count} of them satisfied the second path condition, {total-count} did not.")
+    print(f"{count} of them satisfied the second path condition, {total - count} did not.")
+
 
 # def filter_patterns_using_construction_deterministic(input, output):
 #     input_file = open(input, "r")
@@ -275,7 +362,7 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
             pattern = pattern.lifting().normalize_names()
             pattern.remove_useless_nodes()
             n = n - 1
-        print(f"Check Homo from T_{n} to L^{hom_until-n}(P)")
+        print(f"Check Homo from T_{n} to L^{hom_until - n}(P)")
         solver = satsolver.SatSolver()
         solver.make_clauses(Pattern.T_n(n), pattern)
         if solver.has_homo():
@@ -297,24 +384,26 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
     solved_file.close()
     unsolved_file.close()
     print(f"Checked {total} patterns.")
-    print(f"{total-count} have a hom at {hom_until}, {count} do not.")
+    print(f"{total - count} have a hom at {hom_until}, {count} do not.")
+
 
 start_time = time.time()
 
-check_pattern(4,2458141589)
+log_pattern(5, random.randint(0, 2**50))
 
 
-#filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
 
-#filter_patterns_using_sat_solver("unsolved.txt", "homo_at_20.txt", "unsolved_new.txt", 1000)
+# filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
 
-#check_patterns_from_file("unsolved.txt", "new3.txt")
+# filter_patterns_using_sat_solver("unsolved.txt", "homo_at_20.txt", "unsolved_new.txt", 1000)
 
-#check_pattern(4,57164443)
+# check_patterns_from_file("unsolved.txt", "new3.txt")
 
-#print(check_pattern(4,23731294))
+# check_pattern(4,57164443)
 
-#check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
+# print(check_pattern(4,23731294))
+
+# check_pattern_range_multicore(2**31 + 2**29, 2**32, 2**20, 8, "bla.txt")
 
 # f = open("unsolved2.txt", "a")
 # for i in range(8):

@@ -68,3 +68,4 @@ class SatSolver:
 
     def delete(self):
         self.solver.delete()
+        del self.solver

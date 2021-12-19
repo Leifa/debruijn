@@ -57,7 +57,7 @@ class CaleyGraph:
             rel = Relation.from_code(number, code)
             selfloops = rel.get_nodes_with_a_selfloop()
             if selfloops == set():
-                print(f"No selfloop for relation {rel}")
+                #print(f"No selfloop for relation {rel}")
                 return False
             found_candidate = False
             for candidate in selfloops:
@@ -73,7 +73,7 @@ class CaleyGraph:
                 if found_candidate:
                     break
             if not found_candidate:
-                print(f"Not found a candidate for relation {rel}")
+                #print(f"Not found a candidate for relation {rel}")
                 return False
         return True
 

@@ -33,7 +33,6 @@ def is_construction_deterministic(pattern):
         for set_to_remove in sets_to_remove:
             sets.remove(set_to_remove)
 
-    print(sets)
     set_of_all_nodes = set(pattern.nodes)
     return set_of_all_nodes not in sets
 
