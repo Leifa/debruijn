@@ -12,6 +12,7 @@ import satsolver
 from nfa import Nfa
 from pattern import Pattern
 from caleygraph import CaleyGraph
+from relation import Relation
 
 
 def check_pattern(number_of_nodes, code):
@@ -56,29 +57,86 @@ def check_pattern(number_of_nodes, code):
         print(len(pattern.nodes))
     return 5
 
+# Searches a homomorphism from a Tn into the pattern. The depth is the maximum n that is checked.
+def search_homo(pattern, depth):
+    if pattern.has_double_selfloop():
+        return 0
+
+    liftings = [pattern]
+    last = pattern
+    for i in range(depth):
+        if last.get_number_of_nodes() > 30:
+            break
+        lifting = last.lifting()
+        if lifting.has_double_selfloop():
+            return i+1
+        lifting.normalize_names()
+        lifting.remove_useless_nodes()
+        last = lifting
+        liftings.append(last)
+
+    best = 0
+    for i in range(len(liftings) - 1):
+        if liftings[i + 1].get_number_of_nodes() / liftings[i].get_number_of_nodes() < 2:
+            best = i
+
+    for n in range(len(liftings), depth + 1):
+        solver = satsolver.SatSolver()
+        solver.make_clauses(Pattern.T_n(n - best), liftings[best])
+        if solver.has_homo():
+            return n
+        solver.delete()
+        del solver
+    return -1
+
+def search_counterexample():
+    number_of_nodes = 5
+    count = 0
+    while True:
+        time.sleep(0.01)
+        count += 1
+        code = random.randint(0, 2**50)
+        print(f"{count} - {number_of_nodes}:{code}")
+        pattern = Pattern.from_code(number_of_nodes, code)
+        if constructiondeterministic.is_construction_deterministic(pattern):
+            print("  no homo")
+            continue
+        cg = CaleyGraph(pattern)
+        if not cg.check_first_path_condition() or not cg.check_second_path_condition() or not cg.check_third_path_condition():
+            print("  no homo")
+            continue
+        homo_at = search_homo(pattern, 21)
+        if homo_at == -1:
+            log_pattern(number_of_nodes, code)
+            break
+        else:
+            print(f"  homo at {homo_at}")
+
 
 def log_pattern(number_of_nodes, code):
     YES = colored("YES", "green")
     NO = colored("NO", "red")
     pattern = Pattern.from_code(number_of_nodes, code)
-    cg = CaleyGraph(pattern)
     normal_form = Pattern.check_code_normal_form(number_of_nodes, code)
+    print(f"==== Pattern {number_of_nodes}:{code} ====")
+    pattern.log(True)
+    print(f"Normal form:           {YES if normal_form else NO}")
+    const_nondet = not constructiondeterministic.is_construction_deterministic(pattern)
+    print(f"Construction nondet.:  {YES if const_nondet else NO}")
+    print(f"Caleygraph size:       ", end="", flush=True)
+    cg = CaleyGraph(pattern)
+    print(f"{cg.caley_graph.get_number_of_nodes()}")
     first_pc = cg.check_first_path_condition()
     second_pc = cg.check_second_path_condition()
     third_pc = cg.check_third_path_condition()
-    const_nondet = not constructiondeterministic.is_construction_deterministic(pattern)
+
     homo_at = -1
     solved = False
     if not const_nondet or not first_pc or not second_pc or not third_pc:
         solved = True
-
-    print(f"==== Pattern {number_of_nodes}:{code} ====")
-    pattern.log(True)
-    print(f"Normal form:           {YES if normal_form else NO}")
     print(f"First path condition:  {YES if first_pc else NO}")
     print(f"Second path condition: {YES if second_pc else NO}")
     print(f"Third path condition:  {YES if third_pc else NO}")
-    print(f"Construction nondet.:  {YES if const_nondet else NO}")
     if solved:
         print(colored("No surjective homomorphism", "red"))
 
@@ -86,14 +144,14 @@ def log_pattern(number_of_nodes, code):
     pattern.remove_useless_edges()
     liftings = [pattern]
     last = pattern
-    print("Lifting sizes:         ", end="")
+    print("Lifting sizes:         ", end="", flush=True)
     for i in range(10):
         if last.get_number_of_nodes() > 30:
             print(f"{last.get_number_of_nodes()}")
             break
         else:
             if i < 9:
-                print(f"{last.get_number_of_nodes()}, ", end="")
+                print(f"{last.get_number_of_nodes()}, ", end="", flush=True)
             else:
                 print(f"{last.get_number_of_nodes()}, ")
         lifting = last.lifting()
@@ -117,7 +175,7 @@ def log_pattern(number_of_nodes, code):
             return
 
     if not solved:
-        print(f"No hom until:          {best-1}", end="")
+        print(f"No hom until:          {best-1}", end="", flush=True)
 
     for n in range(best, best + 20):
         solver = satsolver.SatSolver()
@@ -127,12 +185,21 @@ def log_pattern(number_of_nodes, code):
             homo_at = n
             print(colored(f"\nHomomorphism at:      {homo_at}", "green"))
         else:
-            print(f", {n}", end="")
+            print(f", {n}", end="", flush=True)
         solver.delete()
         del solver
         if solved:
             break
 
+def find_good_relations():
+    out = open("5er-relations.txt", "a")
+    for code in range(2**25):
+        if code % 10000 == 0:
+            print(code)
+        rel = Relation.from_code(5, code)
+        if rel.has_selfloop_that_can_reach_all():
+            out.write(f"{code}")
+    out.close()
 
 def check_pattern_range(start, finish, filename):
     results = [0, 0, 0, 0, 0, 0, 0]
@@ -389,9 +456,11 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
 
 start_time = time.time()
 
-log_pattern(5, random.randint(0, 2**50))
+find_good_relations()
 
+#search_counterexample()
 
+#log_pattern(5, 618273496900739+ 2**40)
 
 # filter_patterns_using_first_path_condition_with_caleygraph("unsolved.txt", "new2.txt")
 

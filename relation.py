@@ -129,7 +129,7 @@ class Relation:
                 return True
         return False
 
-    # Returns True if there is a node that has a selfloop and such that all nodes are reachable from there.
+    # Returns the set of nodes that have a selfloop and such that all nodes are reachable from there.
     def get_selfloops_that_can_reach_all(self):
         selfloops_that_can_reach_all = set()
         all_nodes = set(self.succ.keys())
