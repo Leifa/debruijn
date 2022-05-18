@@ -34,6 +34,9 @@ class Relation:
             relation.add_edge(i, i)
         return relation
 
+    def get_number_of_nodes(self):
+        return len(self.succ.keys())
+
     def add_node(self, node):
         self.succ[node] = set()
         self.pred[node] = set()
@@ -156,6 +159,10 @@ class Relation:
                 current_bit *= 2
         return number_of_nodes, code
 
+    def copy(self):
+        number, code = self.to_code(list(self.succ.keys()))
+        return Relation.from_code(number, code)
+
     # Returns a new relation that is isomorphic to the old one, but names are according to the given renaming.
     # The renaming has to be a dictionary, the keys are the nodes, the values are the new names.
     def rename(self, renaming):
@@ -226,6 +233,13 @@ class Relation:
             if self.sees_all(node):
                 nodes_that_see_all.add(node)
         return nodes_that_see_all
+
+    def get_indices_of_nodes(self, set_of_nodes, node_list):
+        indices = []
+        for index in range(self.get_number_of_nodes()):
+            if node_list[index] in set_of_nodes:
+                indices.append(index)
+        return indices
 
     def __eq__(self, other):
         if set(self.succ.keys()) != set(other.succ.keys()):

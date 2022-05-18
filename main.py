@@ -1,4 +1,5 @@
 import gc
+import math
 import random
 from multiprocessing import Process
 import time
@@ -82,20 +83,31 @@ def search_homo(pattern, depth):
 
     for n in range(len(liftings), depth + 1):
         solver = satsolver.SatSolver()
-        solver.make_clauses(Pattern.T_n(n - best), liftings[best])
-        if solver.has_homo():
+        solver.make_hom_clauses_efficient(n - best, liftings[best])
+        if solver.solve():
             return n
         solver.delete()
         del solver
     return -1
 
+def bias_random_code(n, chance):
+    result = 0
+    bits = 2*n*n
+    for i in range(bits):
+        result *= 2
+        if random.random() < chance:
+            result += 1
+    return result
+
+
 def search_counterexample():
     number_of_nodes = 5
     count = 0
     while True:
-        time.sleep(0.01)
+        #time.sleep(0.001)
         count += 1
-        code = random.randint(0, 2**50)
+        #code = random.randint(0, 2**50)
+        code = bias_random_code(5, 0.4)
         print(f"{count} - {number_of_nodes}:{code}")
         pattern = Pattern.from_code(number_of_nodes, code)
         if constructiondeterministic.is_construction_deterministic(pattern):
@@ -165,8 +177,9 @@ def log_pattern(number_of_nodes, code):
 
     best = 0
     for i in range(len(liftings) - 1):
-        if liftings[i + 1].get_number_of_nodes() / liftings[i].get_number_of_nodes() < 2:
-            best = i
+        if liftings[i + 1].get_number_of_nodes() / liftings[i].get_number_of_nodes() < 1.41421:
+            best = i+1
+    print(f"Best No. of Liftings:  {best}")
     for i in range(best+1):
         if liftings[i].has_double_selfloop():
             homo_at = i
@@ -177,10 +190,10 @@ def log_pattern(number_of_nodes, code):
     if not solved:
         print(f"No hom until:          {best-1}", end="", flush=True)
 
-    for n in range(best, best + 20):
+    for n in range(best, best + 22):
         solver = satsolver.SatSolver()
-        solver.make_clauses(Pattern.T_n(n - best), liftings[best])
-        if solver.has_homo():
+        solver.make_hom_clauses_efficient(n-best, liftings[best])
+        if solver.solve():
             solved = True
             homo_at = n
             print(colored(f"\nHomomorphism at:      {homo_at}", "green"))
@@ -431,8 +444,8 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
             n = n - 1
         print(f"Check Homo from T_{n} to L^{hom_until - n}(P)")
         solver = satsolver.SatSolver()
-        solver.make_clauses(Pattern.T_n(n), pattern)
-        if solver.has_homo():
+        solver.make_hom_clauses(Pattern.T_n(n), pattern)
+        if solver.solve():
             solved = True
         solver.delete()
         del solver
@@ -456,7 +469,14 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
 
 start_time = time.time()
 
-find_good_relations()
+#find_good_relations()
+
+#search_counterexample()
+
+log_pattern(5, 846900323733667)
+#log_pattern(5, 758207799374956) #hom at 20
+
+#log_pattern(4,2458141589) #hom at 20
 
 #search_counterexample()
 
