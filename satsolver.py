@@ -287,7 +287,6 @@ class SatSolver:
         return self.solver.solve()
 
     def get_homo(self, n2):
-        return self.solver.get_model()
         assignment = self.solver.get_model()
         homo = {}
         for i in assignment:

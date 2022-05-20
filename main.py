@@ -7,6 +7,7 @@ import time
 from termcolor import colored
 
 import caleygraph
+import codes
 import constructiondeterministic
 
 import satsolver
@@ -130,7 +131,7 @@ def log_pattern(number_of_nodes, code):
     NO = colored("NO", "red")
     pattern = Pattern.from_code(number_of_nodes, code)
     normal_form = Pattern.check_code_normal_form(number_of_nodes, code)
-    print(f"==== Pattern {number_of_nodes}:{code} ====")
+    print(f"==========================")
     pattern.log(True)
     print(f"Normal form:           {YES if normal_form else NO}")
     const_nondet = not constructiondeterministic.is_construction_deterministic(pattern)
@@ -190,7 +191,7 @@ def log_pattern(number_of_nodes, code):
     if not solved:
         print(f"No hom until:          {best-1}", end="", flush=True)
 
-    for n in range(best, best + 22):
+    for n in range(best, 21):
         solver = satsolver.SatSolver()
         solver.make_hom_clauses_efficient(n-best, liftings[best])
         if solver.solve():
@@ -203,6 +204,20 @@ def log_pattern(number_of_nodes, code):
         del solver
         if solved:
             break
+    print("")
+
+def generate_nearby_patterns(number_of_nodes, code):
+    result = []
+    for i in range(2*number_of_nodes**2):
+        if bit(code, i):
+            result.append(code - 2**i)
+        else:
+            result.append(code + 2**i)
+    return result
+
+
+def bit(n, i):
+    return (n // (2**i)) % 2
 
 def find_good_relations():
     out = open("5er-relations.txt", "a")
@@ -213,6 +228,7 @@ def find_good_relations():
         if rel.has_selfloop_that_can_reach_all():
             out.write(f"{code}")
     out.close()
+
 
 def check_pattern_range(start, finish, filename):
     results = [0, 0, 0, 0, 0, 0, 0]
@@ -382,6 +398,19 @@ def filter_patterns_using_first_path_condition_with_caleygraph(input, output):
     print(f"{count} of them satisfied the first path condition, {total - count} did not.")
 
 
+def convert_file_from_old_to_new_format(input, output):
+    input_file = open(input, "r")
+    output_file = open(output, "a")
+    for line in input_file:
+        number_of_nodes, code = line.split(",")
+        number_of_nodes = int(number_of_nodes)
+        code = int(code)
+        newcode = codes.old_code_to_new(number_of_nodes, code)
+        output_file.write(f"{newcode}\n")
+    input_file.close()
+    output_file.close()
+
+
 def filter_patterns_using_second_path_condition_with_caleygraph(input, output):
     input_file = open(input, "r")
     output_file = open(output, "a")
@@ -466,14 +495,38 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
     print(f"Checked {total} patterns.")
     print(f"{total - count} have a hom at {hom_until}, {count} do not.")
 
+# Is the i-th bit of n a one?
+
+def bit(n, i):
+    return (n & (2**i)) > 0
+
+def code_to_new(number_of_nodes, code):
+    result = 0
+    for i in range(1, -1, -1):
+        for j in range(number_of_nodes-1, -1, -1):
+            for k in range(number_of_nodes-1, -1, -1):
+                result *= 2
+                if bit(code, number_of_nodes*number_of_nodes*i + number_of_nodes*k + j):
+                    result += 1
+    return result
+
+
 
 start_time = time.time()
+
+for i in range(10, 21):
+    convert_file_from_old_to_new_format(f"homo_at_{i}.txt", f"homo_at_{i}_new.txt")
 
 #find_good_relations()
 
 #search_counterexample()
 
-log_pattern(5, 846900323733667)
+
+# pat = generate_nearby_patterns(5, 846900323733667)
+# for p in pat:
+#     log_pattern(5, p)
+
+#log_pattern(5, 846900323733667)
 #log_pattern(5, 758207799374956) #hom at 20
 
 #log_pattern(4,2458141589) #hom at 20
