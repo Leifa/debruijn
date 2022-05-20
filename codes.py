@@ -80,3 +80,19 @@ def get_red_predecessors(number_of_nodes, code, i):
         if has_red_edge(number_of_nodes, code, j, i):
             result.append(j)
     return result
+
+
+# Returns a list of lists, the i-th list contains the successors of node i.
+def get_green_successor_lists(number_of_nodes, code):
+    result = []
+    for i in range(number_of_nodes):
+        result.append(get_green_successors(number_of_nodes, code, i))
+    return result
+
+
+# Returns a list of lists, the i-th list contains the successors of node i.
+def get_red_successor_lists(number_of_nodes, code):
+    result = []
+    for i in range(number_of_nodes):
+        result.append(get_red_successors(number_of_nodes, code, i))
+    return result

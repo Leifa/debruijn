@@ -1,6 +1,7 @@
 import pysat.solvers
 from pysat.formula import CNF
 
+import codes
 from pattern import Pattern
 
 
@@ -107,34 +108,17 @@ class SatSolver:
     @classmethod
     def code_to_cnf(self, n, number_of_nodes, code):
         cnf = CNF()
-        green = []
-        red = []
-        for i in range(number_of_nodes):
-            succ_of_i = []
-            for j in range(number_of_nodes):
-                if code % 2 == 1:
-                    succ_of_i.append(j)
-                code = code // 2
-            green.append(succ_of_i)
-        for i in range(number_of_nodes):
-            succ_of_i = []
-            for j in range(number_of_nodes):
-                if code % 2 == 1:
-                    succ_of_i.append(j)
-                code = code // 2
-            red.append(succ_of_i)
+        green = codes.get_green_successor_lists(number_of_nodes, code)
+        red = codes.get_red_successor_lists(number_of_nodes, code)
 
         # Every node from pattern1 has exactly one image in pattern2
         for i in range(2**n):
             # Node i goes to at least one node from pattern2
-            #print(list(range(n2*i+1, n2*(i+1)+1)))
             cnf.append(list(range(number_of_nodes*i+1, number_of_nodes*(i+1)+1)))
             # Node i does not go to two different nodes from pattern2
             for j in range(number_of_nodes):
                 for k in range(j+1, number_of_nodes):
-                    #print([-(n2*i+1+j), -(n2*i+1+k)])
                     cnf.append([-(number_of_nodes*i+1+j), -(number_of_nodes*i+1+k)])
-
 
         if n > 0:
             # For every green edge i->i2 in T_n: If i is mapped to j, then i2 has to be mapped to a green successor of j

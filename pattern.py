@@ -1,4 +1,6 @@
 from random import randint
+
+import codes
 from relation import Relation
 
 
@@ -42,16 +44,16 @@ class Pattern:
         pattern = cls.empty_pattern()
         for i in range(number_of_nodes):
             pattern.add_node(i)
+        green = codes.get_green_successor_lists(number_of_nodes, code)
         for i in range(number_of_nodes):
             for j in range(number_of_nodes):
-                if code % 2 == 1:
+                if j in green[i]:
                     pattern.add_green_edge(i, j)
-                code = code // 2
+        red = codes.get_red_successor_lists(number_of_nodes, code)
         for i in range(number_of_nodes):
             for j in range(number_of_nodes):
-                if code % 2 == 1:
+                if j in red[i]:
                     pattern.add_red_edge(i, j)
-                code = code // 2
         return pattern
 
     @classmethod
@@ -266,12 +268,12 @@ class Pattern:
         current_bit = 1
         for i in range(number_of_nodes):
             for j in range(number_of_nodes):
-                if self.has_green_edge(self.nodes[i], self.nodes[j]):
+                if self.has_green_edge(self.nodes[j], self.nodes[i]):
                     code += current_bit
                 current_bit *= 2
         for i in range(number_of_nodes):
             for j in range(number_of_nodes):
-                if self.has_red_edge(self.nodes[i], self.nodes[j]):
+                if self.has_red_edge(self.nodes[j], self.nodes[i]):
                     code += current_bit
                 current_bit *= 2
         return number_of_nodes, code

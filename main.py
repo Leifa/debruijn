@@ -503,7 +503,7 @@ def bit(n, i):
 
 start_time = time.time()
 
-convert_file_from_old_to_new_format(f"patternlists/5/homo_at_21.txt", f"patternlists/5/homo_at_21_new.txt")
+#convert_file_from_old_to_new_format(f"patternlists/5/homo_at_21.txt", f"patternlists/5/homo_at_21_new.txt")
 
 #find_good_relations()
 
@@ -516,6 +516,7 @@ convert_file_from_old_to_new_format(f"patternlists/5/homo_at_21.txt", f"patternl
 
 #log_pattern(5, 846900323733667)
 #log_pattern(5, 758207799374956) #hom at 20
+log_pattern(4, 2988197403)
 
 #log_pattern(4,2458141589) #hom at 20
 
