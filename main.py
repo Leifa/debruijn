@@ -500,22 +500,10 @@ def filter_patterns_using_sat_solver(input, solved, unsolved, number):
 def bit(n, i):
     return (n & (2**i)) > 0
 
-def code_to_new(number_of_nodes, code):
-    result = 0
-    for i in range(1, -1, -1):
-        for j in range(number_of_nodes-1, -1, -1):
-            for k in range(number_of_nodes-1, -1, -1):
-                result *= 2
-                if bit(code, number_of_nodes*number_of_nodes*i + number_of_nodes*k + j):
-                    result += 1
-    return result
-
-
 
 start_time = time.time()
 
-for i in range(10, 21):
-    convert_file_from_old_to_new_format(f"homo_at_{i}.txt", f"homo_at_{i}_new.txt")
+convert_file_from_old_to_new_format(f"patternlists/5/homo_at_21.txt", f"patternlists/5/homo_at_21_new.txt")
 
 #find_good_relations()
 
