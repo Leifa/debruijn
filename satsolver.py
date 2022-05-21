@@ -270,17 +270,30 @@ class SatSolver:
     def solve(self):
         return self.solver.solve()
 
-    def get_homo(self, n2):
+    def get_homo(self, number_of_nodes):
         assignment = self.solver.get_model()
         homo = {}
         for i in assignment:
             if i > 0:
                 i = i - 1
-                node1 = i // n2
-                node2 = i % n2
+                node1 = i // number_of_nodes
+                node2 = i % number_of_nodes
                 homo[node1] = node2
         return homo
 
+    def get_homo_with_keys_as_binary_strings(self, n, number_of_nodes):
+        assignment = self.solver.get_model()
+        homo = {}
+        for i in assignment:
+            if i > 0:
+                i = i - 1
+                node1 = i // number_of_nodes
+                node2 = i % number_of_nodes
+                homo[bin(node1)[2:].zfill(n)] = node2
+        return homo
+
+    def get_model(self):
+        return self.solver.get_model()
 
     def delete(self):
         self.solver.delete()

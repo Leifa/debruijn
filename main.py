@@ -9,6 +9,7 @@ from termcolor import colored
 import caleygraph
 import codes
 import constructiondeterministic
+import homomorphism
 
 import satsolver
 from nfa import Nfa
@@ -197,7 +198,12 @@ def log_pattern(number_of_nodes, code):
         if solver.solve():
             solved = True
             homo_at = n
-            print(colored(f"\nHomomorphism at:      {homo_at}", "green"))
+            print(colored(f"\nHomomorphism at:       {homo_at}", "green"))
+            hom = solver.get_homo(liftings[best].get_number_of_nodes())
+            string_hom = homomorphism.convert_keys_of_hom_to_binary_strings(hom)
+            compressed_hom = homomorphism.compress_homomorphism(string_hom)
+            for key in sorted(compressed_hom):
+                print(key + " : " + str(compressed_hom[key]))
         else:
             print(f", {n}", end="", flush=True)
         solver.delete()
@@ -516,7 +522,7 @@ start_time = time.time()
 
 #log_pattern(5, 846900323733667)
 #log_pattern(5, 758207799374956) #hom at 20
-log_pattern(5, 586082719390266)
+log_pattern(4, 2819893080)
 
 #log_pattern(4,2458141589) #hom at 20
 
