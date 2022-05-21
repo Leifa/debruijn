@@ -530,7 +530,7 @@ start_time = time.time()
 
 #log_pattern(5, 846900323733667)
 #log_pattern(5, 758207799374956) #hom at 20
-log_pattern(4, 1108858424)
+log_pattern(5, 586082719391291)
 
 #log_pattern(4,2458141589) #hom at 20
 
