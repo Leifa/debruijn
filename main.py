@@ -191,7 +191,7 @@ def log_pattern(number_of_nodes, code):
     if not solved:
         print(f"No hom until:          {best-1}", end="", flush=True)
 
-    for n in range(best, 21):
+    for n in range(best, 23):
         solver = satsolver.SatSolver()
         solver.make_hom_clauses_efficient(n-best, liftings[best])
         if solver.solve():
@@ -516,7 +516,7 @@ start_time = time.time()
 
 #log_pattern(5, 846900323733667)
 #log_pattern(5, 758207799374956) #hom at 20
-log_pattern(4, 2988197403)
+log_pattern(5, 586082719390266)
 
 #log_pattern(4,2458141589) #hom at 20
 
