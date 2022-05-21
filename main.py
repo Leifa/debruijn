@@ -202,8 +202,7 @@ def log_pattern(number_of_nodes, code):
             hom = solver.get_homo(liftings[best].get_number_of_nodes())
             string_hom = homomorphism.convert_keys_of_hom_to_binary_strings(hom)
             compressed_hom = homomorphism.compress_homomorphism(string_hom)
-            for key in sorted(compressed_hom):
-                print(key + " : " + str(compressed_hom[key]))
+            write_dict_to_file_sorted_by_keys("hom.txt", compressed_hom)
         else:
             print(f", {n}", end="", flush=True)
         solver.delete()
@@ -211,6 +210,7 @@ def log_pattern(number_of_nodes, code):
         if solved:
             break
     print("")
+
 
 def generate_nearby_patterns(number_of_nodes, code):
     result = []
@@ -224,6 +224,7 @@ def generate_nearby_patterns(number_of_nodes, code):
 
 def bit(n, i):
     return (n // (2**i)) % 2
+
 
 def find_good_relations():
     out = open("5er-relations.txt", "a")
@@ -357,6 +358,13 @@ def filter_patterns_using_first_path_condition(input, output):
     output_file.close()
     print(f"Checked {total} patterns.")
     print(f"{count} of them satisfied the first path condition, {total - count} did not.")
+
+
+def write_dict_to_file_sorted_by_keys(filename, dic):
+    file = open(filename, "w")
+    for key in sorted(dic):
+        file.write(key + " : " + str(dic[key]) + "\n")
+    file.close()
 
 
 def check_patterns_from_file(input, output):
@@ -522,7 +530,7 @@ start_time = time.time()
 
 #log_pattern(5, 846900323733667)
 #log_pattern(5, 758207799374956) #hom at 20
-log_pattern(4, 2819893080)
+log_pattern(4, 1108858424)
 
 #log_pattern(4,2458141589) #hom at 20
 
