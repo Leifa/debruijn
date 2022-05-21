@@ -6,6 +6,9 @@
 # as a number that has at most 2*n^2 bits and at least 2*n^2-n+1 bits.
 
 # Returns true iff the i-th bit of n equals 1.
+from random import random
+
+
 def bit(n, i):
     return (n & (2**i)) > 0
 
@@ -96,3 +99,40 @@ def get_red_successor_lists(number_of_nodes, code):
     for i in range(number_of_nodes):
         result.append(get_red_successors(number_of_nodes, code, i))
     return result
+
+
+# Returns a random code of a pattern of size n, where each bit has the given chance to be a 1.
+# TODO: Return only patterns where every node has at least one incoming edge of each color.
+def bias_random_code(n, chance):
+    result = 0
+    bits = 2*n*n
+    for i in range(bits):
+        result *= 2
+        if random.random() < chance:
+            result += 1
+    return result
+
+
+# Generates a list of all patterns that have hamming distance one from the given pattern.
+# TODO: Let the hamming distance be an input parameter.
+def generate_nearby_patterns(number_of_nodes, code):
+    result = []
+    for i in range(2*number_of_nodes**2):
+        if bit(code, i):
+            result.append(code - 2**i)
+        else:
+            result.append(code + 2**i)
+    return result
+
+
+def convert_file_from_old_to_new_format(input, output):
+    input_file = open(input, "r")
+    output_file = open(output, "a")
+    for line in input_file:
+        number_of_nodes, code = line.split(",")
+        number_of_nodes = int(number_of_nodes)
+        code = int(code)
+        newcode = old_code_to_new(number_of_nodes, code)
+        output_file.write(f"{newcode}\n")
+    input_file.close()
+    output_file.close()

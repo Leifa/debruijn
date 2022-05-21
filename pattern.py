@@ -363,6 +363,22 @@ class Pattern:
                     prod.add_green_edge((u1,u2), (v1,v2))
         return prod
 
+    # Returns a list of patterns, where result[i] is the i-th lifting of the pattern.
+    # The number of liftings computed depends on max_size. If a lifting has more than max_size many points,
+    # then no further lifting is computed.
+    def get_liftings(self, max_size=30):
+        liftings = [self]
+        last = self
+        for i in range(10):
+            if last.get_number_of_nodes() > max_size:
+                break
+            lifting = last.lifting()
+            lifting.normalize_names()
+            lifting.remove_useless_nodes()
+            last = lifting
+            liftings.append(last)
+        return liftings
+
     def has_green_selfloop(self):
         return self.green.has_selfloop()
 
