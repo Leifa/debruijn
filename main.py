@@ -163,12 +163,18 @@ def log_pattern(code):
             return
 
     if not solved:
-        print(f"No hom until:          {best-1}", end="", flush=True)
+        print(f"Search homomorphism...")
+        print(f"No hom until:          {best-1}")
 
     for n in range(best, 23):
+        print(f"Depth {n}:")
+        print("    Create CNF... ", end="", flush=True)
         solver = satsolver.SatSolver()
         solver.make_hom_clauses_efficient(n-best, liftings[best])
+        print(f"{solver.solver.nof_vars():,} Variables and {solver.solver.nof_clauses():,} Clauses")
+        print(f"    Solve CNF... ", end="", flush=True)
         if solver.solve():
+            print(f"SATISFIABLE!")
             solved = True
             homo_at = n
             print(colored(f"\nHomomorphism at:       {homo_at}", "green"))
@@ -177,7 +183,7 @@ def log_pattern(code):
             compressed_hom = homomorphism.compress_homomorphism(string_hom)
             misc.write_dict_to_file_sorted_by_keys(f"{code}.txt", compressed_hom)
         else:
-            print(f", {n}", end="", flush=True)
+            print("UNSATISFIABLE!")
         solver.delete()
         del solver
         if solved:
@@ -270,7 +276,7 @@ def check_pattern_range_multicore(start, finish, batch_size, cores, filename):
 if len(sys.argv) > 1:
     code = int(sys.argv[1])
 else:
-    code = 586082719386171
+    code = 586082719390259
 
 start_time = time.time()
 log_pattern(code)
