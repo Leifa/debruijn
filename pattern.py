@@ -373,8 +373,8 @@ class Pattern:
             if last.get_number_of_nodes() > max_size:
                 break
             lifting = last.lifting()
-            lifting.normalize_names()
             lifting.remove_useless_nodes()
+            lifting = lifting.normalize_names()
             last = lifting
             liftings.append(last)
         return liftings

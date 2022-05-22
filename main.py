@@ -1,4 +1,5 @@
 import gc
+import sys
 from multiprocessing import Process
 import time
 
@@ -7,6 +8,7 @@ from termcolor import colored
 import codes
 import constructiondeterministic
 import homomorphism
+import misc
 
 import satsolver
 from pattern import Pattern
@@ -113,7 +115,8 @@ def search_counterexample():
             print(f"  homo at {homo_at}")
 
 
-def log_pattern(number_of_nodes, code):
+def log_pattern(code):
+    number_of_nodes = codes.get_number_of_nodes(code)
     YES = colored("YES", "green")
     NO = colored("NO", "red")
     pattern = Pattern.from_code(number_of_nodes, code)
@@ -172,7 +175,7 @@ def log_pattern(number_of_nodes, code):
             hom = solver.get_homo(liftings[best].get_number_of_nodes())
             string_hom = homomorphism.convert_keys_of_hom_to_binary_strings(hom)
             compressed_hom = homomorphism.compress_homomorphism(string_hom)
-            write_dict_to_file_sorted_by_keys("hom.txt", compressed_hom)
+            misc.write_dict_to_file_sorted_by_keys(f"{code}.txt", compressed_hom)
         else:
             print(f", {n}", end="", flush=True)
         solver.delete()
@@ -264,18 +267,12 @@ def check_pattern_range_multicore(start, finish, batch_size, cores, filename):
             pass
     f.close()
 
-
-
-def write_dict_to_file_sorted_by_keys(filename, dic):
-    file = open(filename, "w")
-    for key in sorted(dic):
-        file.write(key + " : " + str(dic[key]) + "\n")
-    file.close()
-
-
-
+if len(sys.argv) > 1:
+    code = int(sys.argv[1])
+else:
+    code = 586082719386171
 
 start_time = time.time()
-log_pattern(4, 622074435)
+log_pattern(code)
 end_time = time.time()
 print(f"Finished in {end_time - start_time} seconds")
